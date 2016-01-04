@@ -1,0 +1,64 @@
+#!/bin/bash
+
+CLUSTER_CNT=24
+GPU_CNT=4
+
+CLUSTER=$(hostname -s | sed 's/[0-9]//g')
+D=$(cd `dirname $0` && pwd)
+SSH="ssh -q -x" #" -o ConnectTimeout=10 -o ServerAliveInterval=3"
+
+JOBSCRIPT=$1
+
+if [ ! -r $JOBSCRIPT ]; then
+    echo "Cannot read $JOBSCRIPT"
+    exit 1
+fi
+
+echo -n "Scheduling..."
+mkdir -p $D/jobs && touch $D/jobs
+
+(
+    flock -xn 200 || echo -n " (locked; waiting...)"
+    flock -xw 10 200 || {
+	echo " Timeout!"
+	echo "Please inspect system with 'dq-status' 'dq-free' etc."
+	exit 1
+    }
+
+    echo -n " (querying resources...)"
+    ALL_FREE=$($D/dq-on-all gpu-free)
+    for i in `seq $CLUSTER_CNT | tac`; do
+	for gpu in `seq 0 $GPU_CNT`; do 
+	    if [[ "$ALL_FREE" == *"$CLUSTER$i: GPU-$gpu"* ]]; then
+		HOST=$CLUSTER$i
+		GPU=$gpu
+		break
+	    fi
+	done
+	if [ "x$HOST" != "x" ]; then break; fi
+    done
+
+
+    if [ "x$HOST" == "x" ]; then
+	echo " All hosts are busy (verify with 'dq-free', 'dq-status' etc.')"
+	exit 1
+    fi
+
+    touch $D/jobs/.jobid # refresh NFS cache
+    n=$(cat $D/jobs/.jobid | sed -e 's/[^0-9]//g')
+    if [ "x$n" = "x" ] ; then 
+	N=1
+    else
+	N=$(( $n + 1 ))
+    fi
+    JOBID=`date +%Y-%m-%d-%H-%M-%S`-$USER
+    JOBID=$N-$USER
+    echo $N > $D/jobs/.jobid
+
+    echo " Scheduled job '$JOBID' on $HOST/GPU=$GPU"
+
+    mkdir $D/jobs/$JOBID && cp $JOBSCRIPT $D/jobs/$JOBID/runme.sh && chmod +x $D/jobs/$JOBID/runme.sh || exit 1
+
+    $SSH $HOST CPATH=$PATH:$D:$D/scripts CPWD=$PWD CUDA_VISIBLE_DEVICES=$GPU $D/dq-submit-backend $JOBID
+
+) 200>$D/jobs/.lock

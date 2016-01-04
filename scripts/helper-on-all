@@ -1,0 +1,7 @@
+#!/bin/bash
+
+D=$(cd `dirname $0` && pwd)
+export PATH=$CPATH:$PATH
+export IN_ON_ALL=y
+cd $CPWD
+shell -pc "$@" | sed "s/^/$(hostname -s): /"

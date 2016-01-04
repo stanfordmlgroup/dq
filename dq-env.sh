@@ -1,0 +1,1 @@
+export PATH=$PATH:/deep/group/dq

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+D=$(cd `dirname $0` && pwd)
+cd $CPWD
+
+NESTEDLOCK=/dev/null
+if [ "x$CUDA_VISIBLE_DEVICES" != "x" ]; then
+    NESTEDLOCK=/dev/nvidia$CUDA_VISIBLE_DEVICES
+fi
+
+touch $D/jobs/$JOBID/lock
+flock -x $D/jobs/$JOBID/lock flock -x $NESTEDLOCK $D/jobs/$JOBID/runme.sh
+sleep 10
