@@ -1,18 +1,22 @@
 #!shell -p
 
 h=$(hostname -s)
-lsof -n /dev/nvidia? 2>/dev/null | sed -r -e 's/[ \t]+/ /g' | grep "CHR" | sed 's,/dev/,,' | while read line; do
-     set $line
-     if [ $4 != "mem" ] ; then
-          continue;
-     fi
-     file=$8
-     inode=$7
-     proc=$1
-     pid=$2
-     user=$3
-     num=$(echo $file | sed 's/[^0-9]//g')
-     mem=$(nvidia-smi -i $num | grep -i 'MiB /' | sed -r 's,.*[^0-9]([0-9]+)MiB /.*,\1,')
-     status=$(sed -n 's/State:[ \t]*//p' /proc/$pid/status)
-     echo "[GPU-$num $mem-MB] User: $user Process: $proc $pid $status"
+dump=$(lsof -n /dev/nvidia? 2>/dev/null | sed -r -e 's/[ \t]+/ /g' | grep "CHR")
+devices=$(echo "$dump" | sed 's,.*/dev/nvidia,,g' | sort | uniq)
+
+for dev in $devices; do
+    lines=$(echo "$dump" | grep "/dev/nvidia$dev" | grep " mem " | cut -f1,2,3 -d' ')
+    if [ "x$lines" = "x" ]; then
+	lines=$(echo "$dump" | grep "/dev/nvidia$dev" | cut -f1,2,3 -d' ' | tail -1)
+    fi
+
+    echo "$lines" | grep ... | while read line; do
+	set $line
+	proc=$1
+	pid=$2
+	user=$3
+	mem=$(nvidia-smi -i $dev | grep -i 'MiB /' | sed -r 's,.*[^0-9]([0-9]+)MiB /.*,\1,')
+	status=$(sed -n 's/State:[ \t]*//p' /proc/$pid/status)
+	echo "[GPU-$dev $mem-MB] User: $user Process: $proc $pid $status"
+    done
 done
