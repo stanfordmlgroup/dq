@@ -32,4 +32,4 @@ install /usr/bin/screen $DIR/screen -D -o root -g deeplearning -m 06750
 install $D/scripts/helper-on-all $DIR/scripts/helper-on-all -D -m 0755
 install_fix $D/scripts/gpu-users $DIR/scripts/gpu-users -D -m 0755
 install_fix $D/scripts/gpu-free $DIR/scripts/gpu-free -D -m 0755
-
+install_fix $D/scripts/gpu-free-list $DIR/scripts/gpu-free-list -D -m 0755
