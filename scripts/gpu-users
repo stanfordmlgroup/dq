@@ -1,7 +1,7 @@
 #!shell -p
 
 h=$(hostname -s)
-lsof -n /dev/nvidia? 2>/dev/null | sed -r -e 's/[ \t]+/ /g' | grep "mem CHR" | sed 's,/dev/,,' | while read line; do
+lsof -n /dev/nvidia? 2>/dev/null | sed -r -e 's/[ \t]+/ /g' | grep "CHR" | sed 's,/dev/,,' | while read line; do
      set $line
      if [ $4 != "mem" ] ; then
           continue;
