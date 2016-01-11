@@ -26,7 +26,7 @@ mkdir -p $D/jobs && touch $D/jobs
     }
 
     echo -n " (querying resources...)"
-    ALL_FREE=$($D/dq-on-all gpu-free)
+    ALL_FREE=$($D/dq-on-all gpu-free-list)
     for i in `seq $CLUSTER_CNT | tac`; do
 	for gpu in `seq 0 $GPU_CNT`; do 
 	    if [[ "$ALL_FREE" == *"$CLUSTER$i: GPU-$gpu"* ]]; then
