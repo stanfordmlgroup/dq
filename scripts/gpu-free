@@ -8,7 +8,8 @@ openfiles=$(lsof -n /dev/nvidia? 2>/dev/null)
 for gpu in $gpus; do
     users=$(echo "$openfiles" | grep /dev/nvidia$gpu | wc -l)
     if [ $users = 0 ] ; then
-       echo -n "$gpu "
+       free="$gpu $free"
     fi
 done
-echo
+
+if [ "x$free" != "x" ]; then echo $free; fi
