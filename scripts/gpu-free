@@ -8,6 +8,7 @@ openfiles=$(lsof -n /dev/nvidia? 2>/dev/null)
 for gpu in $gpus; do
     users=$(echo "$openfiles" | grep /dev/nvidia$gpu | wc -l)
     if [ $users = 0 ] ; then
-       echo GPU-$gpu
+       echo -n "$gpu "
     fi
 done
+echo
