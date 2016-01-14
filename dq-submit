@@ -1,11 +1,6 @@
 #!/bin/bash
 
-CLUSTER_CNT=24
-GPU_CNT=4
-
-CLUSTER=$(hostname -s | sed 's/[0-9]//g')
 D=$(cd `dirname $0` && pwd)
-SSH="ssh -q -x" #" -o ConnectTimeout=10 -o ServerAliveInterval=3"
 
 JOBSCRIPT=$1
 
@@ -14,51 +9,41 @@ if [ ! -r $JOBSCRIPT ]; then
     exit 1
 fi
 
-echo -n "Scheduling..."
-mkdir -p $D/jobs && touch $D/jobs
+QDIR=$D/jobs/queue
+
+echo -n "Locking..."
+mkdir -p $QDIR && touch $QDIR
 
 (
-    flock -xn 200 || echo -n " (locked; waiting...)"
+    flock -xn 200 || echo -n " (waiting...)"
     flock -xw 10 200 || {
 	echo " Timeout!"
 	echo "Please inspect system with 'dq-status' 'dq-free' etc."
 	exit 1
     }
 
-    echo -n " (querying resources...)"
-    ALL_FREE=$($D/dq-on-all gpu-free-list)
-    for i in `seq $CLUSTER_CNT | tac`; do
-	for gpu in `seq 0 $GPU_CNT`; do 
-	    if [[ "$ALL_FREE" == *"$CLUSTER$i: GPU-$gpu"* ]]; then
-		HOST=$CLUSTER$i
-		GPU=$gpu
-		break
-	    fi
-	done
-	if [ "x$HOST" != "x" ]; then break; fi
-    done
+    echo " locked."
 
-
-    if [ "x$HOST" == "x" ]; then
-	echo " All hosts are busy (verify with 'dq-free', 'dq-status' etc.')"
-	exit 1
-    fi
-
-    touch $D/jobs/.jobid # refresh NFS cache
-    n=$(cat $D/jobs/.jobid | sed -e 's/[^0-9]//g')
+    touch $QDIR/.jobid # refresh NFS cache
+    n=$(cat $QDIR/.jobid | sed -e 's/[^0-9]//g')
     if [ "x$n" = "x" ] ; then 
 	N=1
     else
 	N=$(( $n + 1 ))
     fi
-    JOBID=`date +%Y-%m-%d-%H-%M-%S`-$USER
+
     JOBID=$N-$USER
-    echo $N > $D/jobs/.jobid
+    echo $N > $QDIR/.jobid
 
-    echo " Scheduled job '$JOBID' on $HOST/GPU=$GPU"
+    mkdir $QDIR/$JOBID && cp $JOBSCRIPT $QDIR/$JOBID/runme.sh && chmod +x $QDIR/$JOBID/runme.sh || exit 1
+    echo $PATH:$D:$D/scripts > $QDIR/$JOBID/cpath.txt
+    echo $PWD > $QDIR/$JOBID/cpwd.txt
+    echo $USER > $QDIR/$JOBID/user.txt
+    if [ "x$KRB5CCNAME" != "x" ]; then
+	cp $(echo $KRB5CCNAME | sed 's/^[^:]*://') $QDIR/$JOBID/ticket.krb5
+    fi
+    echo "Job ID: '$JOBID'"
 
-    mkdir $D/jobs/$JOBID && cp $JOBSCRIPT $D/jobs/$JOBID/runme.sh && chmod +x $D/jobs/$JOBID/runme.sh || exit 1
+) 200>$QDIR/.lock
 
-    $SSH $HOST CPATH=$PATH:$D:$D/scripts CPWD=$PWD CUDA_VISIBLE_DEVICES=$GPU $D/dq-submit-backend $JOBID
-
-) 200>$D/jobs/.lock
+$D/dq-churn

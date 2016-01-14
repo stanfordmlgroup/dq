@@ -1,0 +1,55 @@
+#!/bin/bash
+
+CLUSTER_CNT=24
+GPU_CNT=4
+
+CLUSTER=$(hostname -s | sed 's/[0-9]//g')
+D=$(cd `dirname $0` && pwd)
+SSH="ssh -q -x" #" -o ConnectTimeout=10 -o ServerAliveInterval=3"
+
+QDIR=$D/jobs/queue
+echo -n "Locking..."
+mkdir -p $QDIR && touch $QDIR
+
+(
+    flock -xn 200 || echo -n " (locked; waiting...)"
+    flock -xw 10 200 || {
+	echo " Timeout!"
+	echo "Please inspect system with 'dq-status' 'dq-free' etc."
+	exit 1
+    }
+
+    echo " locked."
+
+    JOBS=`ls -1 $QDIR | fgrep -`
+
+    if [ "x$JOBS" = "x" ]; then
+	echo "No job requests to schedule"
+	exit 0
+    fi
+
+    for JOBID in $JOBS; do
+	ALL_FREE=$($D/dq-on-all gpu-free-list)
+	for i in `seq $CLUSTER_CNT | tac`; do
+	    for gpu in `seq 0 $GPU_CNT`; do 
+		if [[ "$ALL_FREE" == *"$CLUSTER$i: GPU-$gpu"* ]]; then
+		    HOST=$CLUSTER$i
+		    GPU=$gpu
+		    break
+		fi
+	    done
+	    if [ "x$HOST" != "x" ]; then break; fi
+	done
+
+
+	if [ "x$HOST" == "x" ]; then
+	    echo "All hosts are busy (verify with 'dq-free', 'dq-status' etc.')"
+	    exit 1
+	fi
+
+	U=$(cat $QDIR/$JOBID/user.txt)
+	echo "Executing '$JOBID' on $HOST/$GPU as $U..."
+	KRB5CCNAME=$QDIR/$JOBID/ticket.krb5 $SSH $U@$HOST CUDA_VISIBLE_DEVICES=$GPU $D/dq-submit-backend $JOBID
+    done
+
+) 200>$D/jobs/queue/.lock

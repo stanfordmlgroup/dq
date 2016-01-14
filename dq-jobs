@@ -1,0 +1,15 @@
+#!/bin/bash
+
+D=$(cd `dirname $0` && pwd)
+QDIR=$D/jobs/queue
+ADIR=$D/jobs/active
+CDIR=$D/jobs/complete
+
+QCNT=$(ls -1 $QDIR 2>/dev/null | fgrep -)
+ACNT=$(ls -1 $ADIR 2>/dev/null | fgrep -)
+CCNT=$(ls -1 $CDIR 2>/dev/null | fgrep -)
+
+
+echo "Active jobs: $ACNT"
+echo "Jobs in queue: $QCNT"
+echo "Completed jobs: $CCNT"

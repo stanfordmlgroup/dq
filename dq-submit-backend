@@ -9,8 +9,15 @@ export CUDA_VISIBLE_DEVICES
 
 export JOBID=$1
 
-cd $D/jobs/$JOBID
+mkdir -p $D/jobs/active
+mv $D/jobs/queue/$JOBID $D/jobs/active
+
+cd $D/jobs/active/$JOBID
+
 hostname -s > host.txt
+date > start.txt
+export PATH=`cat cpath.txt`:$PATH
+export CPWD=`cat cpwd.txt`
 
 $D/screen -L -S dq-$JOBID -d -m $D/dq-submit-inner $JOBID
 $D/screen -S dq-$JOBID -X colon "multiuser on ^M"
