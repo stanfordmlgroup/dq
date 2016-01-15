@@ -7,7 +7,7 @@ devices=$(echo "$dump" | sed 's,.*/dev/nvidia,,g' | sort | uniq)
 for dev in $devices; do
     lines=$(echo "$dump" | grep "/dev/nvidia$dev" | grep " mem " | cut -f1,2,3 -d' ')
     if [ "x$lines" = "x" ]; then
-	lines=$(echo "$dump" | grep "/dev/nvidia$dev" | cut -f1,2,3 -d' ' | tail -1)
+	lines=$(echo "$dump" | grep "/dev/nvidia$dev" | sed -n 's/flock/dq/p' | cut -f1,2,3 -d' ' | tail -1)
     fi
 
     echo "$lines" | grep ... | while read line; do
