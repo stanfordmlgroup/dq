@@ -3,10 +3,8 @@
 SUPERUSERS="zxie avati"
 
 D=$(cd `dirname $0` && pwd)
-export PATH=$CPATH:$PATH
-export CPWD
-export CUDA_VISIBLE_DEVICES
 
+export CUDA_VISIBLE_DEVICES
 export JOBID=$1
 
 mkdir -p $D/jobs/active
@@ -18,6 +16,7 @@ hostname -s > host.txt
 date > start.txt
 export PATH=`cat cpath.txt`:$PATH
 export CPWD=`cat cpwd.txt`
+source env.txt
 
 $D/screen -L -S dq-$JOBID -d -m $D/dq-submit-inner $JOBID
 $D/screen -S dq-$JOBID -X colon "multiuser on ^M"
