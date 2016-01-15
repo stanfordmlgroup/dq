@@ -9,3 +9,15 @@ Install by running `install.sh`.
 - `dq-submit`: submits job to cluster
   - `dq-submit script.sh`
 - `dq-users`: alias for `dq-on-all gpu-users`
+
+## Job directories / logs
+
+...
+
+## Monitoring runs
+
+screen sessions, console, ...
+
+## Conventions
+
+logging, arg/opt saving, model parameter save/restore, ...
