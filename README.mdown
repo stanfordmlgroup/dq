@@ -1,0 +1,11 @@
+Install by running `install.sh`.
+
+## Available commands and example usage
+
+- `dq-free`: gets list of free GPUs
+- `dq-jobs`: get status of of running, queued, and completed jobs
+- `dq-on-all`: run command on all nodes
+  - `dq-on-all hostname`
+- `dq-submit`: submits job to cluster
+  - `dq-submit script.sh`
+- `dq-users`: alias for `dq-on-all gpu-users`
