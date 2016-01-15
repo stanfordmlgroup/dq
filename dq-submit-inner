@@ -8,7 +8,21 @@ if [ "x$CUDA_VISIBLE_DEVICES" != "x" ]; then
     NESTEDLOCK=/dev/nvidia$CUDA_VISIBLE_DEVICES
 fi
 
+function cleanup {
+    echo "Cleaning up.."
+    if [ -d $D/jobs/active/$JOBID ]; then
+	date > $D/jobs/active/$JOBID/finish.txt
+	mv $D/jobs/active/$JOBID $D/jobs/complete
+    fi
+    kill -KILL -- -$$
+    wait
+}
+
+trap cleanup SIGINT
+trap '' SIGTERM
+
 touch $D/jobs/active/$JOBID/lock
 flock -x $D/jobs/active/$JOBID/lock flock -x $NESTEDLOCK $D/jobs/active/$JOBID/runme.sh
-sleep 10
-mv $D/jobs/active/$JOBID $D/jobs/complete
+cleanup
+
+$D/dq-churn
