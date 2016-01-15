@@ -28,8 +28,8 @@ install $D/dq-submit-backend $DIR/dq-submit-backend -D -m 0755
 install $D/dq-submit-inner $DIR/dq-submit-inner -D -m 0755
 install $D/dq-free $DIR/dq-free -D -m 0755
 install $D/dq-users $DIR/dq-users -D -m 0755
-install $D/dq-env.sh $DIR/dq-env.sh -D -m 0755
-install $D/dq-env.csh $DIR/dq-env.csh -D -m 0755
+install $D/dq-env.sh $DIR/dq-env.sh -D -m 0644
+install $D/dq-env.csh $DIR/dq-env.csh -D -m 0644
 install /bin/bash $DIR/shell -D -o root -g deeplearning -m 06550
 install /usr/bin/screen $DIR/screen -D -o root -g deeplearning -m 06750
 install $D/scripts/helper-on-all $DIR/scripts/helper-on-all -D -m 0755

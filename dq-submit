@@ -10,9 +10,11 @@ if [ ! -r $JOBSCRIPT ]; then
 fi
 
 QDIR=$D/jobs/queue
+ADIR=$D/jobs/active
+CDIR=$D/jobs/complete
 
 echo -n "Locking..."
-mkdir -p $QDIR && touch $QDIR
+mkdir -p $QDIR $ADIR $CDIR && touch $QDIR
 
 (
     flock -xn 200 || echo -n " (waiting...)"
