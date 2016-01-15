@@ -5,9 +5,9 @@ QDIR=$D/jobs/queue
 ADIR=$D/jobs/active
 CDIR=$D/jobs/complete
 
-QCNT=$(ls -1 $QDIR 2>/dev/null | fgrep -)
-ACNT=$(ls -1 $ADIR 2>/dev/null | fgrep -)
-CCNT=$(ls -1 $CDIR 2>/dev/null | fgrep -)
+QCNT=$(ls -1 $QDIR 2>/dev/null | fgrep - | wc -l)
+ACNT=$(ls -1 $ADIR 2>/dev/null | fgrep - | wc -l)
+CCNT=$(ls -1 $CDIR 2>/dev/null | fgrep - | wc -l)
 
 
 echo "Active jobs: $ACNT"
