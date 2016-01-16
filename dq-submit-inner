@@ -23,6 +23,7 @@ trap '' SIGTERM
 
 touch $D/jobs/active/$JOBID/lock
 flock -x $D/jobs/active/$JOBID/lock flock -x $NESTEDLOCK $D/jobs/active/$JOBID/runme.sh
+$D/dq-churn
 cleanup
 
-$D/dq-churn
+

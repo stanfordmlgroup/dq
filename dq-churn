@@ -21,7 +21,7 @@ mkdir -p $QDIR && touch $QDIR
 
     echo " locked."
 
-    JOBS=`ls -1 $QDIR | fgrep -`
+    JOBS=`ls -1 $QDIR | fgrep - | sort -n -k1 -t-`
 
     if [ "x$JOBS" = "x" ]; then
 	echo "No job requests to schedule"
