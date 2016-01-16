@@ -30,6 +30,8 @@ mkdir -p $QDIR && touch $QDIR
 
     for JOBID in $JOBS; do
 	ALL_FREE=$($D/dq-on-all gpu-free-list)
+	HOST=
+	GPU=
 	for i in `seq $CLUSTER_CNT | tac`; do
 	    for gpu in `seq 0 $GPU_CNT`; do 
 		if [[ "$ALL_FREE" == *"$CLUSTER$i: GPU-$gpu"* ]]; then
