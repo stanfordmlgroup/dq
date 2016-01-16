@@ -29,6 +29,9 @@ mkdir -p $QDIR && touch $QDIR
     fi
 
     for JOBID in $JOBS; do
+	export KRB5CCNAME=$QDIR/$JOBID/ticket.krb5
+	export USER=$(cat $QDIR/$JOBID/user.txt)
+
 	ALL_FREE=$($D/dq-on-all gpu-free-list)
 	HOST=
 	GPU=
@@ -50,8 +53,8 @@ mkdir -p $QDIR && touch $QDIR
 	fi
 
 	U=$(cat $QDIR/$JOBID/user.txt)
-	echo "Executing '$JOBID' on $HOST/$GPU as $U..."
-	KRB5CCNAME=$QDIR/$JOBID/ticket.krb5 $SSH $U@$HOST CUDA_VISIBLE_DEVICES=$GPU $D/dq-submit-backend $JOBID
+	echo "Executing '$JOBID' on $HOST/$GPU as $USER..."
+	$SSH $USER@$HOST CUDA_VISIBLE_DEVICES=$GPU $D/dq-submit-backend $JOBID
     done
 
 ) 200>$D/jobs/queue/.lock
