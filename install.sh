@@ -22,6 +22,7 @@ function install_fix {
 
 install $D/dq-on-all $DIR/dq-on-all -D -m 0755
 install $D/dq-submit $DIR/dq-submit -D -m 0755
+install $D/dq-prepare $DIR/dq-prepare -D -m 0755
 install $D/dq-churn $DIR/dq-churn -D -m 0755
 install $D/dq-jobs $DIR/dq-jobs -D -m 0755
 install $D/dq-submit-backend $DIR/dq-submit-backend -D -m 0755

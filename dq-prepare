@@ -1,0 +1,52 @@
+#!/bin/bash
+
+D=$(cd `dirname $0` && pwd)
+umask 002
+
+JOBSCRIPT=$1
+
+if [ ! -r $JOBSCRIPT ]; then
+    echo "Cannot read $JOBSCRIPT"
+    exit 1
+fi
+
+QDIR=$D/jobs/queue
+ADIR=$D/jobs/active
+CDIR=$D/jobs/complete
+
+echo -n "Locking..."
+mkdir -p $QDIR $ADIR $CDIR && touch $QDIR
+
+(
+    flock -xn 200 || echo -n " (waiting...)"
+    flock -xw 10 200 || {
+	echo " Timeout!"
+	echo "Please inspect system with 'dq-status' 'dq-free' etc."
+	exit 1
+    }
+
+    echo " locked."
+
+    touch $QDIR/.jobid # refresh NFS cache
+    n=$(cat $QDIR/.jobid | sed -e 's/[^0-9]//g')
+    if [ "x$n" = "x" ] ; then 
+	N=1
+    else
+	N=$(( $n + 1 ))
+    fi
+
+    JOBID=$N-$USER
+    echo $N > $QDIR/.jobid
+
+    mkdir $QDIR/$JOBID && cp $JOBSCRIPT $QDIR/$JOBID/runme.sh && chmod +x $QDIR/$JOBID/runme.sh || exit 1
+    echo $PATH:$D:$D/scripts > $QDIR/$JOBID/cpath.txt
+    echo $PWD > $QDIR/$JOBID/cpwd.txt
+    echo $USER > $QDIR/$JOBID/user.txt
+    set | grep DQ_ | sed 's/^/export /g' > $QDIR/$JOBID/env.txt
+    if [ "x$KRB5CCNAME" != "x" ]; then
+	cp $(echo $KRB5CCNAME | sed 's/^[^:]*://') $QDIR/$JOBID/ticket.krb5
+    fi
+    echo "Job ID: '$JOBID'"
+
+) 200>$QDIR/.lock
+
