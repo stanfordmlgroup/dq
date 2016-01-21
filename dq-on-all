@@ -8,7 +8,7 @@ Hs=$(for i in `seq $CLUSTER_CNT`; do echo $CLUSTER$i; done)
 SSH="ssh -q -x" #" -o ConnectTimeout=10 -o ServerAliveInterval=3"
 function cleanup {
     echo "Cleaning up.."
-    kill -KILL -- -$$
+    kill -KILL -- 0
     wait
 }
 

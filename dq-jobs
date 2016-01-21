@@ -5,11 +5,55 @@ QDIR=$D/jobs/queue
 ADIR=$D/jobs/active
 CDIR=$D/jobs/complete
 
-QCNT=$(ls -1 $QDIR 2>/dev/null | fgrep - | wc -l)
-ACNT=$(ls -1 $ADIR 2>/dev/null | fgrep - | wc -l)
-CCNT=$(ls -1 $CDIR 2>/dev/null | fgrep - | wc -l)
+cmd="$1"
 
+case "x$cmd" in
+    "xactive")
+	AJOBS=$(ls -1 $ADIR 2>/dev/null | fgrep - | sort -nk1 -t-)
+	ACNT=$(echo "$AJOBS" | wc -l)
+	echo "Active jobs: $ACNT"
+	for job in $AJOBS; do
+	    true
+	done
 
-echo "Active jobs: $ACNT"
-echo "Jobs in queue: $QCNT"
-echo "Completed jobs: $CCNT"
+	;;
+    "xqueue")
+	QJOBS=$(ls -1 $QDIR 2>/dev/null | fgrep - | sort -nk1 -t-)
+	QCNT=$(echo "$QJOBS" | wc -l)
+	echo "Jobs in queue: $QCNT"
+	for job in $QJOBS; do
+	    true
+	done
+
+	;;
+    "xcomplete")
+	CJOBS=$(ls -1 $CDIR 2>/dev/null | fgrep - | sort -nk1 -t-)
+	CCNT=$(echo "$CJOBS" | wc -l)
+	echo "Completed jobs: $CCNT"
+	for job in $CJOBS; do
+	    if [ -f $CDIR/$job/finish.txt -a -f $CDIR/$job/start.txt ]; then
+		took_str=" - (took $((`date -f $CDIR/$job/finish.txt '+%s'` - `date -f $CDIR/$job/start.txt '+%s'`))s)"
+	    fi
+	    echo "$job$took_str"
+	done
+
+	;;
+    x)
+	QCNT=$(ls -1 $QDIR 2>/dev/null | fgrep - | wc -l)
+	ACNT=$(ls -1 $ADIR 2>/dev/null | fgrep - | wc -l)
+	CCNT=$(ls -1 $CDIR 2>/dev/null | fgrep - | wc -l)
+
+	echo "Active jobs: $ACNT"
+	echo "Jobs in queue: $QCNT"
+	echo "Completed jobs: $CCNT"
+	;;
+    *)
+	QJOBS=$(ls -1 $QDIR 2>/dev/null | grep "$cmd")
+	AJOBS=$(ls -1 $ADIR 2>/dev/null | grep "$cmd")
+	CJOBS=$(ls -1 $CDIR 2>/dev/null | grep "$cmd")
+	ALL_JOBS=$(echo "$QJOBS" "$AJOBS" "$CJOBS" | sort -nk1 -t-)
+	for job in $ALL_JOBS; do
+	    true
+	done
+	;;
+esac

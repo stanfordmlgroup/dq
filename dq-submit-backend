@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SUPERUSERS="zxie avati"
+#SUPERUSERS="zxie avati"
 
 D=$(cd `dirname $0` && pwd)
 
@@ -19,7 +19,7 @@ export CPWD=`cat cpwd.txt`
 source env.txt
 
 $D/screen -L -S dq-$JOBID -d -m $D/dq-submit-inner $JOBID
-$D/screen -S dq-$JOBID -X colon "multiuser on ^M"
-for user in $SUPERUSERS; do
-    $D/screen -S dq-$JOBID -X colon "acladd $user ^M"
-done
+#$D/screen -S dq-$JOBID -X colon "multiuser on ^M"
+#for user in $SUPERUSERS; do
+#    $D/screen -S dq-$JOBID -X colon "acladd $user ^M"
+#done

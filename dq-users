@@ -2,4 +2,4 @@
 
 D=$(cd `dirname $0` && pwd)
 
-$D/dq-on-all gpu-users
+exec $D/dq-on-all gpu-users
