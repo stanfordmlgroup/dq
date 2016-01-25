@@ -5,7 +5,7 @@ CLUSTER_CNT=24
 CLUSTER=$(hostname -s | sed 's/[0-9]//g')
 D=$(cd `dirname $0` && pwd)
 Hs=$(for i in `seq $CLUSTER_CNT`; do echo $CLUSTER$i; done)
-SSH="ssh -q -x" #" -o ConnectTimeout=10 -o ServerAliveInterval=3"
+SSH="ssh -q -x -o BatchMode=yes" #" -o ConnectTimeout=10 -o ServerAliveInterval=3"
 function cleanup {
     echo "Cleaning up.."
     kill -KILL -- 0

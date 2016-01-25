@@ -5,7 +5,7 @@ GPU_CNT=4
 
 CLUSTER=$(hostname -s | sed 's/[0-9]//g')
 D=$(cd `dirname $0` && pwd)
-SSH="ssh -q -x" #" -o ConnectTimeout=10 -o ServerAliveInterval=3"
+SSH="ssh -q -x -o BatchMode=yes" #" -o ConnectTimeout=10 -o ServerAliveInterval=3"
 
 QDIR=$D/jobs/queue
 echo -n "Locking..."
