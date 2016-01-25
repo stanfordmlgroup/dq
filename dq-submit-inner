@@ -14,16 +14,16 @@ function cleanup {
 	date > $D/jobs/active/$JOBID/finish.txt
 	mv $D/jobs/active/$JOBID $D/jobs/complete
     fi
-    kill -KILL -- -$$
+    kill -KILL -- 0
     wait
 }
 
 trap cleanup SIGINT
 trap '' SIGTERM
 
-touch $D/jobs/active/$JOBID/lock
-flock -x $D/jobs/active/$JOBID/lock flock -x $NESTEDLOCK $D/jobs/active/$JOBID/runme.sh
+export JOBDIR=$D/jobs/active/$JOBID
+export JOBID
+touch $JOBDIR/lock
+flock -x $JOBDIR/lock flock -x $NESTEDLOCK $JOBDIR/runme.sh
 $D/dq-churn
 cleanup
-
-
