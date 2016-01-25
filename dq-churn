@@ -48,7 +48,7 @@ mkdir -p $QDIR && touch $QDIR
 
 
 	if [ "x$HOST" == "x" ]; then
-	    echo "All hosts are busy (verify with 'dq-free', 'dq-status' etc.')"
+	    echo "Could not schedule $JOBID. (verify hosts with 'dq-free', 'dq-status' etc.')"
 	    exit 1
 	fi
 
