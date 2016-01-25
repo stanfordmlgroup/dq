@@ -45,6 +45,7 @@ mkdir -p $QDIR $ADIR $CDIR && touch $QDIR
     set | grep DQ_ | sed 's/^/export /g' > $QDIR/$JOBID/env.txt
     if [ "x$KRB5CCNAME" != "x" ]; then
 	cp $(echo $KRB5CCNAME | sed 's/^[^:]*://') $QDIR/$JOBID/ticket.krb5
+	chmod g+r $QDIR/$JOBID/ticket.krb5
     fi
     echo "Job ID: '$JOBID'"
 
