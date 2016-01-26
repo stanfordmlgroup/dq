@@ -8,10 +8,10 @@ D=$(cd `dirname $0` && pwd)
 SSH="ssh -q -x -o BatchMode=yes" #" -o ConnectTimeout=10 -o ServerAliveInterval=3"
 
 QDIR=$D/jobs/queue
-echo -n "Locking..."
 mkdir -p $QDIR && touch $QDIR
 
 (
+    echo -n "Locking..."
     flock -xn 200 || echo -n " (locked; waiting...)"
     flock -xw 10 200 || {
 	echo " Timeout!"

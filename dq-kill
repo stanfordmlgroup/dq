@@ -24,70 +24,53 @@ if [ $ACNT -eq 0 ]; then
     fi
 fi
 
-if [ $ACNT -gt 1 ]; then
-    echo "Ambiguous job specification '$jobspec'. Multiple possibilities:"
-    echo "$AJOBS"
-    exit 1
-fi
+if [ $ACNT -gt 0 ]; then
+    for JOBID in $AJOBS; do
+	JOBDIR=$ADIR/$JOBID
 
+	U=$(cat $JOBDIR/user.txt)
+	H=$(cat $JOBDIR/host.txt)
 
-if [ $ACNT -eq 1 ]; then
-    JOBID=$AJOBS
-    JOBDIR=$ADIR/$JOBID
-
-    U=$(cat $JOBDIR/user.txt)
-    H=$(cat $JOBDIR/host.txt)
-    
-    KRB5CCNAME=$JOBDIR/ticket.krb5 $SSH -t $U@$H screen -x dq-$JOBID
+	echo "Killing $JOBID on $H ..."
+	KRB5CCNAME=$JOBDIR/ticket.krb5 $SSH -t $U@$H screen -S dq-$JOBID -X "quit 
+"
+    done
     exit $?
 fi
-
 
 # $ACNT -lt 1
+(
+    echo -n "Locking..."
+    flock -xn 200 || echo -n " (locked; waiting...)"
+    flock -xw 10 200 || {
+	echo " Timeout!"
+	echo "Please inspect system with 'dq-status' 'dq-free' etc."
+	exit 1
+    }
 
-QJOBS=$(ls -1 $QDIR | grep "^$jobspec-")
-QCNT=$(echo "$QJOBS" | grep . | wc -l)
-if [ $QCNT -eq 0 ]; then
-    QJOBS=$(ls -1 $QDIR | grep "^$jobspec")
+    echo " locked."
+
+    QJOBS=$(ls -1 $QDIR | grep "^$jobspec-")
     QCNT=$(echo "$QJOBS" | grep . | wc -l)
     if [ $QCNT -eq 0 ]; then
-	QJOBS=$(ls -1 $QDIR | grep "$jobspec")
+	QJOBS=$(ls -1 $QDIR | grep "^$jobspec")
 	QCNT=$(echo "$QJOBS" | grep . | wc -l)
+	if [ $QCNT -eq 0 ]; then
+	    QJOBS=$(ls -1 $QDIR | grep "$jobspec")
+	    QCNT=$(echo "$QJOBS" | grep . | wc -l)
+	fi
     fi
-fi
 
-if [ $QCNT -gt 0 ]; then
-    echo "Following jobs still in queue: "
-    echo "$QJOBS"
-    exit 1
-fi
+    if [ $QCNT -gt 0 ]; then
+	for JOBID in $QJOBS; do
+	    JOBDIR=$QDIR/$JOBID
+	    date > $JOBDIR/abort.txt
 
-
-# $ACNT -lt 1 -a $QCNT -le 0
-
-CJOBS=$(ls -1 $CDIR | grep "^$jobspec-")
-CCNT=$(echo "$CJOBS" | grep . | wc -l)
-if [ $CCNT -eq 0 ]; then
-    CJOBS=$(ls -1 $CDIR | grep "^$jobspec")
-    CCNT=$(echo "$CJOBS" | grep . | wc -l)
-    if [ $CCNT -eq 0 ]; then
-	CJOBS=$(ls -1 $CDIR | grep "$jobspec")
-	CCNT=$(echo "$CJOBS" | grep . | wc -l)
+	    echo "Canceling $JOBID ..."
+	    mv $JOBDIR $CDIR
+	done
+	exit $?
     fi
-fi
-
-if [ $CCNT -gt 1 ]; then
-    echo "Ambiguous job specification '$jobspec'. Multiple possibilities:"
-    echo "$CJOBS"
-    exit 1
-fi
-
-if [ $CCNT -eq 1 ]; then
-    JOBID=$CJOBS
-    JOBDIR=$CDIR/$JOBID
-
-    cat $JOBDIR/screenlog.0
-    exit $?
-fi
+) >$QDIR/.lock
 
 echo "Could not find matching job for '$jobspec'"
