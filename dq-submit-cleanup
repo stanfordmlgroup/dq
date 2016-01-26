@@ -1,0 +1,15 @@
+#!/bin/bash
+
+D=$(cd `dirname $0` && pwd)
+
+JOBID=$1
+
+if [ "x$JOBID" = "x" ]; then
+   echo "Usage: $0 <JOBID>"
+   exit 1
+fi
+
+if [ -d $D/jobs/active/$JOBID ]; then
+   date > $D/jobs/active/$JOBID/cleanup.txt
+   mv $D/jobs/active/$JOBID $D/jobs/complete
+fi

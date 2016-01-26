@@ -28,6 +28,7 @@ install $D/dq-jobs $DIR/dq-jobs -D -m 0755
 install $D/dq-attach $DIR/dq-attach -D -m 0755
 install $D/dq-submit-backend $DIR/dq-submit-backend -D -m 0755
 install $D/dq-submit-inner $DIR/dq-submit-inner -D -m 0755
+install $D/dq-submit-cleanup $DIR/dq-submit-cleanup -D -m 0755
 install $D/dq-free $DIR/dq-free -D -m 0755
 install $D/dq-users $DIR/dq-users -D -m 0755
 install $D/dq-env.sh $DIR/dq-env.sh -D -m 0644
