@@ -10,25 +10,31 @@ cmd="$1"
 case "x$cmd" in
     "xactive")
 	AJOBS=$(ls -1 $ADIR 2>/dev/null | fgrep - | sort -nk1 -t-)
-	ACNT=$(echo "$AJOBS" | wc -l)
+	ACNT=$(echo "$AJOBS" | grep . | wc -l)
 	echo "Active jobs: $ACNT"
 	for job in $AJOBS; do
-	    true
+	    if [ -f $ADIR/$job/start.txt ]; then
+		since_str=" - (since $((`date '+%s'` - `date -f $QDIR/$job/start.txt`))s)"
+	    fi
+	    echo "$job$since_str"
 	done
 
 	;;
     "xqueue")
 	QJOBS=$(ls -1 $QDIR 2>/dev/null | fgrep - | sort -nk1 -t-)
-	QCNT=$(echo "$QJOBS" | wc -l)
+	QCNT=$(echo "$QJOBS" | grep . | wc -l)
 	echo "Jobs in queue: $QCNT"
 	for job in $QJOBS; do
-	    true
+	    if [ -f $QDIR/$job/queue.txt ]; then
+		since_str=" - (since $((`date '+%s'` - `date -f $QDIR/$job/queue.txt`))s)"
+	    fi
+	    echo "$job$since_str"
 	done
 
 	;;
     "xcomplete")
 	CJOBS=$(ls -1 $CDIR 2>/dev/null | fgrep - | sort -nk1 -t-)
-	CCNT=$(echo "$CJOBS" | wc -l)
+	CCNT=$(echo "$CJOBS" | grep . | wc -l)
 	echo "Completed jobs: $CCNT"
 	for job in $CJOBS; do
 	    if [ -f $CDIR/$job/finish.txt -a -f $CDIR/$job/start.txt ]; then
@@ -48,12 +54,28 @@ case "x$cmd" in
 	echo "Completed jobs: $CCNT"
 	;;
     *)
-	QJOBS=$(ls -1 $QDIR 2>/dev/null | grep "$cmd")
-	AJOBS=$(ls -1 $ADIR 2>/dev/null | grep "$cmd")
-	CJOBS=$(ls -1 $CDIR 2>/dev/null | grep "$cmd")
-	ALL_JOBS=$(echo "$QJOBS" "$AJOBS" "$CJOBS" | sort -nk1 -t-)
-	for job in $ALL_JOBS; do
-	    true
-	done
+	(
+	    QJOBS=$(ls -1 $QDIR 2>/dev/null | grep "$cmd")
+	    for job in $QJOBS; do
+		if [ -f $QDIR/$job/queue.txt ]; then
+		    since_str=" - (since $((`date '+%s'` - `date -f $QDIR/$job/queue.txt`))s)"
+		fi
+		echo "$job: queued$since_str"
+	    done
+	    AJOBS=$(ls -1 $ADIR 2>/dev/null | grep "$cmd")
+	    for job in $AJOBS; do
+		if [ -f $ADIR/$job/start.txt ]; then
+		    since_str=" - (since $((`date '+%s'` - `date -f $QDIR/$job/start.txt`))s)"
+		fi
+		echo "$job: active$since_str"
+	    done
+	    CJOBS=$(ls -1 $CDIR 2>/dev/null | grep "$cmd")
+	    for job in $CJOBS; do
+		if [ -f $CDIR/$job/finish.txt -a -f $CDIR/$job/start.txt ]; then
+		    took_str=" - (took $((`date -f $CDIR/$job/finish.txt '+%s'` - `date -f $CDIR/$job/start.txt '+%s'`))s)"
+		fi
+		echo "$job: complete$took_str"
+	    done
+	) | sort -nk1 -t-
 	;;
 esac
