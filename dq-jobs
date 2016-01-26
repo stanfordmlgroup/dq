@@ -14,7 +14,7 @@ case "x$cmd" in
 	echo "Active jobs: $ACNT"
 	for job in $AJOBS; do
 	    if [ -f $ADIR/$job/start.txt ]; then
-		since_str=" - (since $((`date '+%s'` - `date -f $ADIR/$job/start.txt`))s)"
+		since_str=" - (since $((`date '+%s'` - `date -f $ADIR/$job/start.txt '+%s'`))s)"
 	    fi
 	    echo "$job$since_str"
 	done
@@ -26,7 +26,7 @@ case "x$cmd" in
 	echo "Jobs in queue: $QCNT"
 	for job in $QJOBS; do
 	    if [ -f $QDIR/$job/queue.txt ]; then
-		since_str=" - (since $((`date '+%s'` - `date -f $QDIR/$job/queue.txt`))s)"
+		since_str=" - (since $((`date '+%s'` - `date -f $QDIR/$job/queue.txt '+%s'`))s)"
 	    fi
 	    echo "$job$since_str"
 	done
