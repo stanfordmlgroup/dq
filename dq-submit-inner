@@ -16,7 +16,7 @@ touch $JOBDIR/lock
     flock -x 200
     flock -x 201
 
-    ( flock -x 200 $D/dq-submit-cleanup $JOBID & ) &
+    ( flock -x $JOBDIR/lock $D/dq-submit-cleanup $JOBID & ) &
 
     $JOBDIR/runme.sh
     date > $D/jobs/active/$JOBID/finish.txt
