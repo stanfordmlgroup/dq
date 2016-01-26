@@ -71,6 +71,8 @@ fi
 	done
 	exit $?
     fi
-) >$QDIR/.lock
 
-echo "Could not find matching job for '$jobspec'"
+    echo "Could not find matching job for '$jobspec'"
+
+) 200>$QDIR/.lock
+
