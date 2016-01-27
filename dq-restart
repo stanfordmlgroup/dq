@@ -1,0 +1,57 @@
+#!/bin/bash
+
+D=$(cd `dirname $0` && pwd)
+umask 002
+
+QDIR=$D/jobs/queue
+ADIR=$D/jobs/active
+CDIR=$D/jobs/complete
+
+jobspec=$1
+
+OLDJOB=$(ls -1 $CDIR | grep "^$jobspec-")
+
+if [ "x$OLDJOB" = "x" ]; then
+    echo "No such job '$jobspec'"
+    exit 1
+fi
+
+
+echo -n "Locking..."
+mkdir -p $QDIR $ADIR $CDIR && touch $QDIR
+
+(
+    flock -xn 200 || echo -n " (waiting...)"
+    flock -xw 10 200 || {
+	echo " Timeout!"
+	echo "Please inspect system with 'dq-status' 'dq-free' etc."
+	exit 1
+    }
+
+    echo " locked."
+
+    touch $QDIR/.jobid # refresh NFS cache
+    n=$(cat $QDIR/.jobid | sed -e 's/[^0-9]//g')
+    if [ "x$n" = "x" ] ; then 
+	N=1
+    else
+	N=$(( $n + 1 ))
+    fi
+
+    JOBID=$N-$USER
+    echo $N > $QDIR/.jobid
+
+    mkdir $QDIR/$JOBID
+    cp -a $CDIR/$OLDJOB/runme.sh $QDIR/$JOBID/runme.sh
+    cp -a $CDIR/$OLDJOB/cpwd.txt $QDIR/$JOBID/cpwd.txt
+    cp -a $CDIR/$OLDJOB/cpath.txt $QDIR/$JOBID/cpath.txt
+    cp -a $CDIR/$OLDJOB/user.txt $QDIR/$JOBID/user.txt
+    cp -a $CDIR/$OLDJOB/env.txt $QDIR/$JOBID/env.txt
+    cp -a $CDIR/$OLDJOB/ticket.krb5 $QDIR/$JOBID/ticket.krb5
+
+    echo "Job ID: '$JOBID'"
+
+) 200>$QDIR/.lock
+
+
+$D/dq-churn

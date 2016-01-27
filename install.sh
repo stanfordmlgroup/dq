@@ -27,6 +27,7 @@ install $D/dq-churn $DIR/dq-churn -D -m 0755
 install $D/dq-jobs $DIR/dq-jobs -D -m 0755
 install $D/dq-kill $DIR/dq-kill -D -m 0755
 install $D/dq-attach $DIR/dq-attach -D -m 0755
+install $D/dq-restart $DIR/dq-restart -D -m 0755
 install $D/dq-submit-backend $DIR/dq-submit-backend -D -m 0755
 install $D/dq-submit-inner $DIR/dq-submit-inner -D -m 0755
 install $D/dq-submit-cleanup $DIR/dq-submit-cleanup -D -m 0755
