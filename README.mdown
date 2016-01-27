@@ -6,9 +6,12 @@ Install by running `install.sh`.
 - `dq-jobs`: get status of of running, queued, and completed jobs
 - `dq-on-all`: run command on all nodes
   - `dq-on-all hostname`
-- `dq-submit`: submits job to cluster
+- `dq-submit`: submits a new job to cluster
   - `dq-submit script.sh`
-- `dq-users`: alias for `dq-on-all gpu-users`
+- `dq-users`: get current GPU users on the cluster
+- `dq-attach`: attach to the console of a running job, or see the output of a finished job
+- `dq-kill`: kill a running job or cancel a waiting job (in queue)
+- `dq-restart`: restart a completed job (either crashed or successfully finished)
 
 ## Job directories / logs
 
