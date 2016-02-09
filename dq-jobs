@@ -14,7 +14,8 @@ case "x$cmd" in
 	echo "Active jobs: $ACNT"
 	for job in $AJOBS; do
 	    if [ -f $ADIR/$job/start.txt ]; then
-		since_str=" - (since $((`date '+%s'` - `date -f $ADIR/$job/start.txt '+%s'`))s)"
+		h=$(head -1 $ADIR/$job/host.txt)
+		since_str=" - (on $host since $((`date '+%s'` - `date -f $ADIR/$job/start.txt '+%s'`))s)"
 	    fi
 	    echo "$job$since_str"
 	done
