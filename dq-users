@@ -2,8 +2,17 @@
 
 D=$(cd `dirname $0` && pwd)
 
-(
-    echo "Host GPU Mem User Process PID Status"
-    echo "---- --- --- ---- ------- --- ------"
-    $D/dq-on-all gpu-users
-) | column -t
+
+$D/dq-on-all gpu-users | { while read line; do
+	echo -n "."
+	OUT="$OUT$line
+"
+    done
+
+    echo
+    (
+	echo "Host GPU Mem User Process PID Status"
+	echo "---- --- --- ---- ------- --- ------"
+	echo "$OUT"
+    ) | column -t
+}
