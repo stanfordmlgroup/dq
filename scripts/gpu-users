@@ -17,6 +17,7 @@ for dev in $devices; do
 	user=$3
 	mem=$(nvidia-smi -i $dev | grep -i 'MiB /' | sed -r 's,.*[^0-9]([0-9]+)MiB /.*,\1,')
 	status=$(sed -n 's/State:[ \t]*//p' /proc/$pid/status)
-	echo "[GPU-$dev $mem-MB] User: $user Process: $proc $pid $status"
+#	echo "[GPU-$dev $mem-MB] User: $user Process: $proc $pid $status"
+	echo "$h $dev $mem-MB $user $proc $pid $status"
     done
 done

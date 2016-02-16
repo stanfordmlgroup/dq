@@ -2,4 +2,7 @@
 
 D=$(cd `dirname $0` && pwd)
 
-exec $D/dq-on-all gpu-users
+(
+    echo "Host GPU Mem User Process PID Status"
+    $D/dq-on-all gpu-users
+) | column -t
