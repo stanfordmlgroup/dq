@@ -62,17 +62,38 @@ case "x$cmd" in
 	    done
 	) | column -t
 
+	QJOBS=$(ls -1 $QDIR 2>/dev/null | fgrep - | sort -nk1 -t-)
+	QCNT=$(echo "$QJOBS" | grep . | wc -l)
+	if [ $QCNT -gt 0 ]; then
+	    echo "Jobs in queue: $QCNT (run 'dq-jobs queue' to inspect)"
+	fi
 	;;
     "xqueue")
 	QJOBS=$(ls -1 $QDIR 2>/dev/null | fgrep - | sort -nk1 -t-)
 	QCNT=$(echo "$QJOBS" | grep . | wc -l)
 	echo "Jobs in queue: $QCNT"
-	for job in $QJOBS; do
-	    if [ -f $QDIR/$job/queue.txt ]; then
-		since_str=" - (since $((`date '+%s'` - `date -f $QDIR/$job/queue.txt '+%s'`))s)"
-	    fi
-	    echo "$job$since_str"
-	done
+	(
+	    echo "JobID Wait Script Env"
+	    echo "----- ---- ------ ---"
+	    for job in $QJOBS; do
+		if [ -f $QDIR/$job/queue.txt ]; then
+		    secs="$((`date '+%s'` - `date -f $QDIR/$job/queue.txt '+%s'`))"
+		else
+		    secs="unk"
+		fi
+		if [ -f $QDIR/$job/script.txt ]; then
+		    script=$(head -1 $QDIR/$job/script.txt)
+		else
+		    script="unk"
+		fi
+		if [ -f $QDIR/$job/env.txt ]; then
+		    env=$(cut -f2 -d' ' $QDIR/$job/env.txt | tr '\n' ' ')
+		else
+		    env=""
+		fi
+		echo "$job ${secs}s $script $env"
+	    done
+	) | column -t
 
 	;;
     "xcomplete")
