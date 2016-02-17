@@ -34,8 +34,8 @@ case "x$cmd" in
 	ACNT=$(echo "$AJOBS" | grep . | wc -l)
 	echo "Active jobs: $ACNT"
 	(
-	    echo "JobID Host GPU Runtime"
-	    echo "----- ---- --- -------"
+	    echo "JobID Host GPU Runtime Script Env"
+	    echo "----- ---- --- ------- ------ ---"
 	    for job in $AJOBS; do
 		host=$(head -1 $ADIR/$job/host.txt)
 		if [ -f $ADIR/$job/start.txt ]; then
@@ -48,7 +48,17 @@ case "x$cmd" in
 		else
 		    gpu="unk"
 		fi
-		echo "$job $host $gpu ${secs}s"
+		if [ -f $ADIR/$job/script.txt ]; then
+		    script=$(head -1 $ADIR/$job/script.txt)
+		else
+		    script="unk"
+		fi
+		if [ -f $ADIR/$job/env.txt ]; then
+		    env=$(cut -f2 -d' ' $ADIR/$job/env.txt | tr '\n' ' ')
+		else
+		    env=""
+		fi
+		echo "$job $host $gpu ${secs}s $script $env"
 	    done
 	) | column -t
 

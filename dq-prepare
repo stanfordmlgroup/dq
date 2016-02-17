@@ -3,6 +3,13 @@
 D=$(cd `dirname $0` && pwd)
 umask 002
 
+function abspath {
+    bname=$(basename $1)
+    dirname=$(dirname $1)
+    absdirname=$(cd $dirname && pwd)
+    echo "$absdirname/$bname"
+}
+
 JOBSCRIPT=$1
 
 if [ ! -r $JOBSCRIPT ]; then
@@ -44,6 +51,7 @@ mkdir -p $BDIR $QDIR $ADIR $CDIR && touch $BDIR
     echo $PWD > $BDIR/$JOBID/cpwd.txt
     echo $USER > $BDIR/$JOBID/user.txt
     date > $BDIR/$JOBID/queue.txt
+    echo $(abspath $JOBSCRIPT) > $BDIR/$JOBID/script.txt
     set | grep DQ_ | sed 's/^/export /g' > $BDIR/$JOBID/env.txt
     if [ "x$KRB5CCNAME" != "x" ]; then
 	cp $(echo $KRB5CCNAME | sed 's/^[^:]*://') $BDIR/$JOBID/ticket.krb5
