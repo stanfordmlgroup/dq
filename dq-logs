@@ -1,0 +1,49 @@
+#!/bin/bash
+
+D=$(cd `dirname $0` && pwd)
+BDIR=$D/jobs/backend
+
+SSH="ssh -q -x -o BatchMode=yes" #" -o ConnectTimeout=10 -o ServerAliveInterval=3"
+
+jobspec="$1"
+
+if [ "x$jobspec" = "x" ]; then
+    jobspec=$USER
+fi
+
+BJOBS=$(ls -1 $BDIR | grep "^$jobspec-")
+BCNT=$(echo "$BJOBS" | grep . | wc -l)
+if [ $BCNT -eq 0 ]; then
+    BJOBS=$(ls -1 $BDIR | grep "^$jobspec")
+    BCNT=$(echo "$BJOBS" | grep . | wc -l)
+    if [ $BCNT -eq 0 ]; then
+	BJOBS=$(ls -1 $BDIR | grep "$jobspec")
+	BCNT=$(echo "$BJOBS" | grep . | wc -l)
+    fi
+fi
+
+if [ $BCNT -gt 1 ]; then
+    echo "Ambiguous job specification '$jobspec'. Multiple possibilities:"
+    echo "$BJOBS"
+    exit 1
+fi
+
+
+if [ $BCNT -eq 1 ]; then
+    JOBID=$BJOBS
+    JOBDIR=$BDIR/$JOBID
+
+    U=$(cat $JOBDIR/user.txt)
+    H=$(cat $JOBDIR/host.txt)
+ 
+    if ! flock -nx $JOBDIR/lock true; then
+	echo "Flushing logs of $JOBID"
+	KRB5CCNAME=$JOBDIR/ticket.krb5 $SSH -t $U@$H screen -S dq-$JOBID -X colon "logfile flush 1
+"
+    fi
+
+    cat $JOBDIR/screenlog.0
+    exit 0
+fi
+
+echo "Could not find matching job for '$jobspec'"
