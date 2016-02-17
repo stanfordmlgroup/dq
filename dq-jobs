@@ -7,18 +7,50 @@ CDIR=$D/jobs/complete
 
 cmd="$1"
 
+if [ "x$cmd" = "x" ]; then
+    cmd="active";
+fi
+
+function reapstale {
+    for j in `ls -1 $ADIR`; do
+	if flock -nx $ADIR/$j/lock true; then
+	    echo "Cleaning stale job $j"
+	    if [ ! -f $ADIR/$j/finish.txt ]; then
+		date > $ADIR/$j/finish.txt
+	    fi
+	    if [ ! -f $ADIR/$j/cleanup.txt ]; then
+		date > $ADIR/$j/cleanup.txt
+	    fi
+	    mv $ADIR/$j $CDIR/$j
+	fi
+    done
+}
+
 case "x$cmd" in
     "xactive")
+	reapstale
+
 	AJOBS=$(ls -1 $ADIR 2>/dev/null | fgrep - | sort -nk1 -t-)
 	ACNT=$(echo "$AJOBS" | grep . | wc -l)
 	echo "Active jobs: $ACNT"
-	for job in $AJOBS; do
-	    if [ -f $ADIR/$job/start.txt ]; then
+	(
+	    echo "JobID Host GPU Runtime"
+	    echo "----- ---- --- -------"
+	    for job in $AJOBS; do
 		host=$(head -1 $ADIR/$job/host.txt)
-		since_str=" - (on $host since $((`date '+%s'` - `date -f $ADIR/$job/start.txt '+%s'`))s)"
-	    fi
-	    echo "$job$since_str"
-	done
+		if [ -f $ADIR/$job/start.txt ]; then
+		    secs="$((`date '+%s'` - `date -f $ADIR/$job/start.txt '+%s'`))"
+		else
+		    secs="unk"
+		fi
+		if [ -f $ADIR/$job/gpu.txt ]; then
+		    gpu=$(head -1 $ADIR/$job/gpu.txt)
+		else
+		    gpu="unk"
+		fi
+		echo "$job $host $gpu ${secs}s"
+	    done
+	) | column -t
 
 	;;
     "xqueue")
@@ -45,7 +77,9 @@ case "x$cmd" in
 	done
 
 	;;
-    x)
+    "xsummary")
+	reapstale
+
 	QCNT=$(ls -1 $QDIR 2>/dev/null | fgrep - | wc -l)
 	ACNT=$(ls -1 $ADIR 2>/dev/null | fgrep - | wc -l)
 	CCNT=$(ls -1 $CDIR 2>/dev/null | fgrep - | wc -l)

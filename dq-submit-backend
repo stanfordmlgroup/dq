@@ -13,6 +13,7 @@ mv $D/jobs/queue/$JOBID $D/jobs/active
 cd $D/jobs/active/$JOBID
 
 hostname -s > host.txt
+echo $CUDA_VISIBLE_DEVICES > gpu.txt
 date > start.txt
 export PATH=`cat cpath.txt`:$PATH
 export CPWD=`cat cpwd.txt`
