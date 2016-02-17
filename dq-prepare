@@ -10,12 +10,13 @@ if [ ! -r $JOBSCRIPT ]; then
     exit 1
 fi
 
+BDIR=$D/jobs/backend
 QDIR=$D/jobs/queue
 ADIR=$D/jobs/active
 CDIR=$D/jobs/complete
 
 echo -n "Locking..."
-mkdir -p $QDIR $ADIR $CDIR && touch $QDIR
+mkdir -p $BDIR $QDIR $ADIR $CDIR && touch $BDIR
 
 (
     flock -xn 200 || echo -n " (waiting...)"
@@ -27,8 +28,8 @@ mkdir -p $QDIR $ADIR $CDIR && touch $QDIR
 
     echo " locked."
 
-    touch $QDIR/.jobid # refresh NFS cache
-    n=$(cat $QDIR/.jobid | sed -e 's/[^0-9]//g')
+    touch $BDIR/.jobid # refresh NFS cache
+    n=$(cat $BDIR/.jobid | sed -e 's/[^0-9]//g')
     if [ "x$n" = "x" ] ; then 
 	N=1
     else
@@ -36,19 +37,22 @@ mkdir -p $QDIR $ADIR $CDIR && touch $QDIR
     fi
 
     JOBID=$N-$USER
-    echo $N > $QDIR/.jobid
+    echo $N > $BDIR/.jobid
 
-    mkdir $QDIR/$JOBID && cp $JOBSCRIPT $QDIR/$JOBID/runme.sh && chmod +x $QDIR/$JOBID/runme.sh || exit 1
-    echo $PATH:$D:$D/scripts > $QDIR/$JOBID/cpath.txt
-    echo $PWD > $QDIR/$JOBID/cpwd.txt
-    echo $USER > $QDIR/$JOBID/user.txt
-    date > $QDIR/$JOBID/queue.txt
-    set | grep DQ_ | sed 's/^/export /g' > $QDIR/$JOBID/env.txt
+    mkdir $BDIR/$JOBID && cp $JOBSCRIPT $BDIR/$JOBID/runme.sh && chmod +x $BDIR/$JOBID/runme.sh || exit 1
+    echo $PATH:$D:$D/scripts > $BDIR/$JOBID/cpath.txt
+    echo $PWD > $BDIR/$JOBID/cpwd.txt
+    echo $USER > $BDIR/$JOBID/user.txt
+    date > $BDIR/$JOBID/queue.txt
+    set | grep DQ_ | sed 's/^/export /g' > $BDIR/$JOBID/env.txt
     if [ "x$KRB5CCNAME" != "x" ]; then
-	cp $(echo $KRB5CCNAME | sed 's/^[^:]*://') $QDIR/$JOBID/ticket.krb5
-	chmod g+r $QDIR/$JOBID/ticket.krb5
+	cp $(echo $KRB5CCNAME | sed 's/^[^:]*://') $BDIR/$JOBID/ticket.krb5
+	chmod g+r $BDIR/$JOBID/ticket.krb5
     fi
+
+    ln -s "../backend/$JOBID" $QDIR/$JOBID
+
     echo "Job ID: '$JOBID'"
 
-) 200>$QDIR/.lock
+) 200>$BDIR/.lock
 

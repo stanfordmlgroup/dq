@@ -9,7 +9,7 @@ SSH="ssh -q -x -o BatchMode=yes" #" -o ConnectTimeout=10 -o ServerAliveInterval=
 
 QDIR=$D/jobs/queue
 mkdir -p $QDIR && touch $QDIR
-
+touch $QDIR/.lock
 (
     echo -n "Locking..."
     flock -xn 200 || echo -n " (locked; waiting...)"
@@ -57,4 +57,4 @@ mkdir -p $QDIR && touch $QDIR
 	$SSH $USER@$HOST CUDA_VISIBLE_DEVICES=$GPU $D/dq-submit-backend $JOBID
     done
 
-) 200>$D/jobs/queue/.lock
+) 200>$QDIR/.lock
