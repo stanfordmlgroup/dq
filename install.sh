@@ -30,6 +30,8 @@ install $D/dq-attach $DIR/dq-attach -D -m 0755
 install $D/dq-logs $DIR/dq-logs -D -m 0755
 install $D/dq-grep $DIR/dq-grep -D -m 0755
 install $D/dq-tail $DIR/dq-tail -D -m 0755
+install $D/dq-head $DIR/dq-head -D -m 0755
+install $D/dq-grep $DIR/dq-grep -D -m 0755
 install $D/dq-restart $DIR/dq-restart -D -m 0755
 install $D/dq-submit-backend $DIR/dq-submit-backend -D -m 0755
 install $D/dq-submit-inner $DIR/dq-submit-inner -D -m 0755
