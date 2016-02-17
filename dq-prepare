@@ -52,6 +52,7 @@ mkdir -p $BDIR $QDIR $ADIR $CDIR && touch $BDIR
     echo $USER > $BDIR/$JOBID/user.txt
     echo $(abspath $JOBSCRIPT) > $BDIR/$JOBID/script.txt
     date > $BDIR/$JOBID/queue.txt
+    echo $(abspath $JOBSCRIPT) > $BDIR/$JOBID/script.txt
     set | grep DQ_ | sed 's/^/export /g' > $BDIR/$JOBID/env.txt
     if [ "x$KRB5CCNAME" != "x" ]; then
 	cp $(echo $KRB5CCNAME | sed 's/^[^:]*://') $BDIR/$JOBID/ticket.krb5
