@@ -3,6 +3,8 @@
 D=$(cd `dirname $0` && pwd)
 cd $CPWD
 
+keeptoken
+
 NESTEDLOCK=/dev/null
 if [ "x$CUDA_VISIBLE_DEVICES" != "x" ]; then
     NESTEDLOCK=/dev/nvidia$CUDA_VISIBLE_DEVICES
