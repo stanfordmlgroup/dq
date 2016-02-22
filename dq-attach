@@ -86,7 +86,8 @@ if [ $CCNT -eq 1 ]; then
     JOBID=$CJOBS
     JOBDIR=$CDIR/$JOBID
 
-    cat $JOBDIR/screenlog.0
+    echo "$JOBID has completed. Use 'dq-logs $jobspec' instead."
+    #cat $JOBDIR/screenlog.0
     exit $?
 fi
 
