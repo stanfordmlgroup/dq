@@ -21,7 +21,7 @@ export PATH=`cat cpath.txt`:$PATH
 export CPWD=`cat cpwd.txt`
 source env.txt
 
-$D/screen -L -S dq-$JOBID -d -m $D/dq-submit-inner $JOBID
+pagsh -c "$D/screen -L -S dq-$JOBID -d -m $D/dq-submit-inner $JOBID"
 #$D/screen -S dq-$JOBID -X colon "multiuser on ^M"
 #for user in $SUPERUSERS; do
 #    $D/screen -S dq-$JOBID -X colon "acladd $user ^M"
