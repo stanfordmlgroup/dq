@@ -275,23 +275,57 @@ Calling `dq-logs job-ID` without any additional commands can end up dumping a LO
 
 ### dq-attach
 
-### dq-kill
+Usage: `dq-attach job-ID`
+
+This command attaches you to the screen session of the executing job. The job ID should be of a job that is currently executing (if not, the command will fail to attach to anything). Once you are attached, you can use the standard screen keybindings (type Ctrl-a Ctrl-d to detach).
+
+Example:
+
+	avati@deep22:~$ dq-attach 3898
 
 ### dq-restart
 
+Usage: `dq-restart job-ID`
+
+This command restarts a job that has already completed or crashed. The job is re-created exactly (including environment variables, working directory etc.) from the old job.
+
+Example:
+
+	avati@deep22:~$ dq-restart 3900
+	Locking... locked.
+	Job ID: '3901-avati'
+	Locking... locked.
+	Executing '3901-avati' on deep24/1 as avati...
+	
 ### dq-free
 
-- `dq-free`: gets list of free GPUs
-- `dq-submit`: submits a new job to cluster
-  - `dq-submit script.sh`
-- `dq-attach`: attach to the console of a running job, or see the output of a finished job
-- `dq-kill`: kill a running job or cancel a waiting job (in queue)
-- `dq-restart`: restart a completed job (either crashed or successfully finished)
+Usage: `dq-free`
 
+This commands prints the list of unused GPUs on each system.
+
+Example:
+
+	avati@deep22:~$ dq-free
+	deep21: 1 0
+	deep9: 3 2 0
+	deep23: 3
+	deep24: 3
+	deep8: 2 1 0
+	deep13: 2 1 0
+	deep5: 2 1 0
+	deep6: 3 2 1 0
+	deep14: 3 2 1 0
+	deep7: 3 2 1 0
+	deep4: 3 2 1 0
+	deep12: 3 2 1 0
+	deep11: 3 2 1 0
+	deep15: 3 2 1 0
+	deep10: 3 2 1 0
+	
 ## Job directories / logs
 
-...
+This section describes some of the internals of `dq`. All of `dq` and its data is contained within `/deep/group/dq`. Every job that is submitted is contained within the directory `/deep/group/dq/jobs/backend/$job-ID`. The job directory contains various files, for example, the screen log file, job specification details etc.
 
 ## Conventions
 
-logging, arg/opt saving, model parameter save/restore, ...
+TBD logging, arg/opt saving, model parameter save/restore, ...
