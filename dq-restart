@@ -3,6 +3,7 @@
 D=$(cd `dirname $0` && pwd)
 umask 002
 
+BDIR=$D/jobs/backend
 QDIR=$D/jobs/queue
 ADIR=$D/jobs/active
 CDIR=$D/jobs/complete
@@ -18,7 +19,7 @@ fi
 
 
 echo -n "Locking..."
-mkdir -p $QDIR $ADIR $CDIR && touch $QDIR
+mkdir -p $QDIR $ADIR $CDIR $BDIR && touch $BDIR
 
 (
     flock -xn 200 || echo -n " (waiting...)"
@@ -30,8 +31,8 @@ mkdir -p $QDIR $ADIR $CDIR && touch $QDIR
 
     echo " locked."
 
-    touch $QDIR/.jobid # refresh NFS cache
-    n=$(cat $QDIR/.jobid | sed -e 's/[^0-9]//g')
+    touch $BDIR/.jobid # refresh NFS cache
+    n=$(cat $BDIR/.jobid | sed -e 's/[^0-9]//g')
     if [ "x$n" = "x" ] ; then 
 	N=1
     else
@@ -39,15 +40,18 @@ mkdir -p $QDIR $ADIR $CDIR && touch $QDIR
     fi
 
     JOBID=$N-$USER
-    echo $N > $QDIR/.jobid
+    echo $N > $BDIR/.jobid
 
-    mkdir $QDIR/$JOBID
-    cp -a $CDIR/$OLDJOB/runme.sh $QDIR/$JOBID/runme.sh
-    cp -a $CDIR/$OLDJOB/cpwd.txt $QDIR/$JOBID/cpwd.txt
-    cp -a $CDIR/$OLDJOB/cpath.txt $QDIR/$JOBID/cpath.txt
-    cp -a $CDIR/$OLDJOB/user.txt $QDIR/$JOBID/user.txt
-    cp -a $CDIR/$OLDJOB/env.txt $QDIR/$JOBID/env.txt
-    cp -a $CDIR/$OLDJOB/ticket.krb5 $QDIR/$JOBID/ticket.krb5
+    mkdir $BDIR/$JOBID
+    cp -a $CDIR/$OLDJOB/runme.sh $BDIR/$JOBID/runme.sh
+    cp -a $CDIR/$OLDJOB/cpwd.txt $BDIR/$JOBID/cpwd.txt
+    cp -a $CDIR/$OLDJOB/cpath.txt $BDIR/$JOBID/cpath.txt
+    cp -a $CDIR/$OLDJOB/user.txt $BDIR/$JOBID/user.txt
+    cp -a $CDIR/$OLDJOB/script.txt $BDIR/$JOBID/script.txt
+    cp -a $CDIR/$OLDJOB/env.txt $BDIR/$JOBID/env.txt
+    cp -a $CDIR/$OLDJOB/ticket.krb5 $BDIR/$JOBID/ticket.krb5
+
+    ln -s "../backend/$JOBID" $QDIR/$JOBID
 
     echo "Job ID: '$JOBID'"
 
