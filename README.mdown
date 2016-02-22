@@ -1,14 +1,289 @@
-Install by running `install.sh`.
+# Introduction
+
+`dq` is a collection of tools that together achieve job queueing, scheduling, monitoring and control. It presents a set of simple commands, each of which achieves a single goal.
+
+`dq` schedules jobs over GPU resources in a cluster. A job is specified with a shell script in a particular directory that is already in the cluster. When the job is scheduled to a free server, the shell script is executed on that server, from the same directory where it was submitted. Each job is assigned a job ID, and executed in its own `screen` session on the scheduled server. Convenience commands to re-attach to the screen of a specified job ID and commands to inspect its output are provided as well. All job submissions go through a queue where they wait until GPU resources become available.
+
+The usage of commands that come with `dq` are described below:
 
 ## Available commands and example usage
 
+### dq-on-all
+
+Usage: `dq-on-all command`
+
+This tool executes the `command` specified as an argument on all the servers of the cluster in parallel and prints the output from each server with the hostname prefixed in each line. The output lines have no defined order as the command is executed in parallel.
+
+Example:
+
+	avati@deep23:~$ dq-on-all date '+%Y-%m-%d'
+	deep20: 2016-02-22
+	deep18: 2016-02-22
+	deep16: 2016-02-22
+	deep21: 2016-02-22
+	deep14: 2016-02-22
+	deep24: 2016-02-22
+	deep23: 2016-02-22
+	deep10: 2016-02-22
+	deep8: 2016-02-22
+	deep6: 2016-02-22
+	deep22: 2016-02-22
+	deep5: 2016-02-22
+	deep19: 2016-02-22
+	deep2: 2016-02-22
+	deep7: 2016-02-22
+	deep12: 2016-02-22
+	deep4: 2016-02-22
+	deep9: 2016-02-22
+	deep3: 2016-02-22
+	deep11: 2016-02-22
+	deep15: 2016-02-22
+	deep13: 2016-02-22
+	deep1: 2016-02-22
+	deep17: 2016-02-22
+	
+### dq-users
+
+Usage:  `dq-users`
+
+This tool prints all the current GPU users in the cluster, including those processes that were started by hand (not just those jobs submitted through `dq-submit`)
+
+Example:
+
+	avati@deep23:~$ dq-users
+	...............................................
+	Host     GPU  Mem      User      Process  PID    Status
+	----     ---  ---      ----      -------  ---    ------
+	deep18:  0    5953-MB  prateekv  caffe    29109  R       (running)
+	deep18:  1    5154-MB  prateekv  caffe    27456  R       (running)
+	deep18:  2    5953-MB  prateekv  caffe    31258  R       (running)
+	deep18:  3    5953-MB  prateekv  caffe    32396  R       (running)
+	deep16:  0    1701-MB  prateekv  caffe    28673  R       (running)
+	deep16:  1    1773-MB  prateekv  caffe    28537  R       (running)
+	deep16:  2    1701-MB  prateekv  caffe    25239  R       (running)
+	deep16:  3    1725-MB  prateekv  caffe    28607  R       (running)
+	deep21:  2    907-MB   zxie      python   23049  R       (running)
+	deep21:  3    994-MB   zxie      python   13670  R       (running)
+	deep23:  0    2778-MB  prateekv  caffe    23630  R       (running)
+	deep23:  1    2798-MB  prateekv  caffe    18923  R       (running)
+	deep23:  2    2778-MB  prateekv  caffe    19212  R       (running)
+	deep9:   1    90-MB    prateekv  caffe    28244  R       (running)
+	deep1:   0    1204-MB  arastogi  python   28004  R       (running)
+	deep1:   1    1229-MB  arastogi  python   3805   R       (running)
+	deep1:   2    1172-MB  arastogi  python   14654  R       (running)
+	deep1:   3    1183-MB  arastogi  python   14730  R       (running)
+	deep24:  0    1521-MB  avati     python   6169   R       (running)
+	deep24:  2    926-MB   avati     python   4905   R       (running)
+	deep22:  0    5686-MB  lmthang   MATLAB   19723  S       (sleeping)
+	deep22:  1    6012-MB  lmthang   MATLAB   28239  S       (sleeping)
+	deep22:  2    6106-MB  lmthang   MATLAB   19615  S       (sleeping)
+	deep22:  3    3969-MB  lmthang   MATLAB   30489  S       (sleeping)
+	deep20:  0    781-MB   arastogi  python   18329  R       (running)
+	deep20:  1    3253-MB  lmthang   MATLAB   23424  S       (sleeping)
+	deep20:  2    3057-MB  lmthang   MATLAB   23419  S       (sleeping)
+	deep20:  3    3475-MB  lmthang   MATLAB   23554  S       (sleeping)
+	deep19:  0    993-MB   arastogi  python   24588  R       (running)
+	deep19:  1    5588-MB  lmthang   MATLAB   1282   S       (sleeping)
+	deep19:  2    3011-MB  lmthang   MATLAB   1288   S       (sleeping)
+	deep19:  3    3255-MB  lmthang   MATLAB   1314   S       (sleeping)
+	deep3:   0    1170-MB  arastogi  python   16553  R       (running)
+	deep3:   1    1174-MB  arastogi  python   16897  R       (running)
+	deep3:   2    1227-MB  arastogi  python   17072  R       (running)
+	deep3:   3    1306-MB  arastogi  python   17227  R       (running)
+	deep2:   0    1174-MB  arastogi  python   25378  R       (running)
+	deep2:   1    1230-MB  arastogi  python   25508  R       (running)
+	deep2:   2    1201-MB  arastogi  python   25573  R       (running)
+	deep2:   3    1208-MB  arastogi  python   25592  R       (running)
+	deep17:  0    4861-MB  prateekv  caffe    5323   R       (running)
+	deep17:  0    4861-MB  prateekv  caffe    30748  R       (running)
+	deep17:  1    660-MB   prateekv  caffe    22443  R       (running)
+	deep17:  2    4255-MB  prateekv  caffe    15982  R       (running)
+	deep17:  2    4255-MB  prateekv  caffe    30409  R       (running)
+	deep17:  3    3024-MB  prateekv  caffe    2956   R       (running)
+	deep17:  3    3024-MB  prateekv  caffe    30264  R       (running)
+	
+
+### dq-jobs
+
+Usage: `dq-jobs`|`dq-jobs summary`|`dq-jobs queue`|`dq-jobs complete`
+
+This tool prints the status of jobs that were submitted through `dq-submit`. Running `dq-jobs` without any arguments prints details of the currently active and executing jobs.
+
+Example:
+
+	avati@deep23:~$ dq-jobs
+	Active jobs: 2
+	JobID       Host    GPU  Runtime  Script                                    Env
+	-----       ----    ---  -------  ------                                    ---
+	3198-avati  deep24  2    503450s  /deep/u/avati/ug/models/encdec/submit.sh
+	3898-avati  deep24  0    237094s  /deep/u/avati/ug/models/encdec/submit.sh
+	Jobs in queue: 1 (run 'dq-jobs queue' to inspect)
+	
+
+A high level summary of job counts can be obtained by executing `dq-jobs summary`
+
+
+Example:
+
+	avati@deep23:~$ dq-jobs summary
+	Active jobs: 2
+	Jobs in queue: 1
+	Completed jobs: 3895
+
+The wait queue can be inspected with `dq-jobs queue`.
+
+Example:
+
+	avati@deep22:~$ dq-jobs queue
+	Jobs in queue: 1
+	JobID       Wait  Script                     Env
+	-----       ----  ------                     ---
+	3899-avati  17s   /deep/u/avati/tmp/test.sh
+
+### dq-submit
+
+Usage: `dq-submit script.sh`
+
+This is the main tool to submit a job request for scheduling and execution. The argument is the path to a program that is to be executed. Typically, it is the path to a script that invokes the actual tool. Each submitted job is assigned a job ID that is printed on the screen when the job is accepted. The scheduler finds a free GPU in the cluster, and executes the job on the server that contains the GPU. The environment variable $CUDA_VISIBLE_DEVICES is set to the scheduled GPU. This way, the jobs that use cuda library can only access the scheduled GPU and not the others. For e.g, if you are using theano, always use "gpu0" since that picks the first (and only) visible device.
+
+Scheduled jobs are executed in a screen session which can be later attached to, and the output (stdio and stderr) is logged in a file which can be inspected later.
+
+The scheduled job is executed from the same working directory (i.e output of the `pwd` shell command) where `dq-submit` was invoked from.
+
+##### (PRO-TIP)
+Any environment variables that start with "DQ_" prefix are captured and set by the scheduler during execution as well. This can be handy when you want to run the same script multiple times, but with different prameters or configuration options. This way it is possible to invoke `DQ_VAR=val dq-submit ./script.sh` multiple times with a different value of `val` in each invocation, and `script.sh` would have to use the variable `$DQ_VAR` in an appropriate way (like using it in a command-line argument or config file while calling theano, or caffe etc.) Environment variables that are captured and set during execution are also displayed in the output of `dq-jobs`.
+
+Example:
+
+	avati@deep22:~/tmp$ cat test.sh
+	#!/bin/bash
+
+	emacs $DQ_FILENAME
+
+	avati@deep22:~/tmp$ DQ_FILENAME=worked.txt dq-submit ./test.sh
+	Locking... locked.
+	Job ID: '3900-avati'
+	Locking... locked.
+	Executing '3900-avati' on deep24/3 as avati...
+
+	avati@deep22:~/tmp$ dq-jobs
+	Active jobs: 4
+	JobID       Host    GPU  Runtime  Script                                    Env
+	-----       ----    ---  -------  ------                                    ---
+	3198-avati  deep24  2    510890s  /deep/u/avati/ug/models/encdec/submit.sh
+	3898-avati  deep24  0    244534s  /deep/u/avati/ug/models/encdec/submit.sh
+	3900-avati  deep24  3    4s       /deep/u/avati/tmp/test.sh                 DQ_FILENAME=worked.txt
+
+
+##### (PRO-TIP 2)
+It can also be useful to set DQ_DESC="description" while submitting a job, especially when you are submitting multiple jobs, since it makes inspection of `dq-jobs` output easier.
+
+### dq-kill
+
+Usage: `dq-kill job-ID`
+
+To kill a job that is not yet complete, use `dq-kill` with the job ID as the argument. If the job is still in queue, it is removed from the queue. If the job is already executing, the processes associated with the job are killed and the screen session is terminated.
+
+Example:
+
+	avati@deep22:~$ dq-kill 3899
+	Killing 3899-avati on deep24 ...
+	avati@deep22:~$
+
+### dq-grep
+
+Usage: `dq-grep job-ID PATTERN`
+
+This command searches for a regular expression pattern in the stdout and stderr of the job. This can be particularly useful if the job outputs a specific pattern indicating some event. Job-ID could either be the job ID of a job that is either active (executing) or complete.
+
+Example:
+
+	avati@deep22:~$ dq-grep 3898 validation
+	Flushing logs of 3898-avati
+	INFO:root:validation cost: 0.537916
+	INFO:root:validation cost: 0.391447
+	INFO:root:validation cost: 0.345430
+	INFO:root:validation cost: 0.319990
+	INFO:root:validation cost: 0.305573
+	INFO:root:validation cost: 0.293192
+	INFO:root:validation cost: 0.286324
+	INFO:root:validation cost: 0.278626
+	INFO:root:validation cost: 0.271154
+	INFO:root:validation cost: 0.267131
+	INFO:root:validation cost: 0.262589
+	INFO:root:validation cost: 0.258684
+	INFO:root:validation cost: 0.259261
+	INFO:root:validation cost: 0.254449
+	INFO:root:validation cost: 0.250593
+	INFO:root:validation cost: 0.248205
+	INFO:root:validation cost: 0.245827
+	INFO:root:validation cost: 0.244926
+	
+
+### dq-tail
+
+Usage: `dq-tail job-ID` | `dq-tail job-ID -NUM` | `dq-tail job-ID -f`
+
+This command displays the last few lines of the job output. Internally, it invokes the tail command on the stdout and stderr of the job. Job-ID is job ID of a job that is either active (executing) or complete. A common use case of this command is to inspect how many epochs of job training has completed, etc.
+
+Example:
+
+	avati@deep22:~$ dq-tail 3198 -5
+	Flushing logs of 3198-avati
+	INFO:root:epoch 38, iter 4255, cost 0.187221, expcost 0.190304, grad/param norm 0.067684, batch time 2.491542, length mean/stdev 60.226562/1.854955
+	INFO:root:epoch 38, iter 4256, cost 0.172880, expcost 0.190120, grad/param norm 0.077902, batch time 2.731651, length mean/stdev 67.515625/2.598029
+	INFO:root:epoch 38, iter 4257, cost 0.188096, expcost 0.190096, grad/param norm 0.082865, batch time 3.277930, length mean/stdev 76.398438/2.599098
+	INFO:root:epoch 38, iter 4258, cost 0.201931, expcost 0.190255, grad/param norm 0.095607, batch time 4.269683, length mean/stdev 86.632812/3.579174
+	INFO:root:epoch 38, iter 4259, cost 0.182421, expcost 0.190130, grad/param norm 0.096207, batch time 5.002980, length mean/stdev 103.609375/6.635881
+
+### dq-head
+
+Usage: `dq-head job-ID` | `dq-head job-ID -NUM`
+
+This command displays the first few lines of the job output. Internally, it invokes the head command on the stdout and stderr of the job. Job-ID is the job ID of a job that is either active (executing) or complete. A common use case of this command is to verify the initialization of a job, etc.
+
+Example:
+
+	avati@deep22:~$ dq-head 3198 -11
+	Flushing logs of 3198-avati
+	++ DIM=600
+	++ DROPOUT=0.2
+	++ LR=0.0001
+	++ EPOCHS=40
+	++ SCALE=0.05
+	++ THEANO_FLAGS=device=gpu0,floatX=float32,optimizer_excluding=cudnn
+	++ python char_rw_encdec.py --rlayers 3 --pyramid --print_every 1 --attention --optimizer adam --epochs 40 --lr 0.0001 --rnn_dim 600 --dropout 0.2 --expdir ./att_2layer_bidir_adam_600_lr0.0001_dropout0.2_epochs40
+	Using gpu device 0: GeForce GTX TITAN Black (CNMeM is disabled)
+	INFO:root:setting up data...
+	INFO:root:done setting up data
+	Using pyramid encoder
+	
+
+### dq-logs
+
+Usage: `dq-logs job-ID`
+
+This command dumps the entire output of the job to the stdout. Internally, it invokes the `cat` command on the stdout and stderr of the job. Job-ID is the job ID of a job that is either active (executing) or complete. A common use case of this command is to pipe the entire job output to some kind of text processing, etc.
+
+Example:
+
+	avati@deep22:~$ dq-logs 3198 | wc -l
+	166631
+
+##### WARNING
+Calling `dq-logs job-ID` without any additional commands can end up dumping a LOT of output to the console.
+
+### dq-attach
+
+### dq-kill
+
+### dq-restart
+
+### dq-free
+
 - `dq-free`: gets list of free GPUs
-- `dq-jobs`: get status of of running, queued, and completed jobs
-- `dq-on-all`: run command on all nodes
-  - `dq-on-all hostname`
 - `dq-submit`: submits a new job to cluster
   - `dq-submit script.sh`
-- `dq-users`: get current GPU users on the cluster
 - `dq-attach`: attach to the console of a running job, or see the output of a finished job
 - `dq-kill`: kill a running job or cancel a waiting job (in queue)
 - `dq-restart`: restart a completed job (either crashed or successfully finished)
@@ -16,10 +291,6 @@ Install by running `install.sh`.
 ## Job directories / logs
 
 ...
-
-## Monitoring runs
-
-screen sessions, console, ...
 
 ## Conventions
 
