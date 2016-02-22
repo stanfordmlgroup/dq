@@ -7,6 +7,8 @@ D=$(cd `dirname $0` && pwd)
 export CUDA_VISIBLE_DEVICES
 export JOBID=$1
 
+export KRB5CCNAME=$D/jobs/backend/$JOBID/ticket.krb5
+
 mkdir -p $D/jobs/active
 mv $D/jobs/queue/$JOBID $D/jobs/active
 
