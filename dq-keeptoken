@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -x
+
+fname=$(echo $KRB5CCNAME | sed 's/FILE://g')
+kinit -R && chmod g+r $fname && aklog
+
+while [ $? -eq 0 ]; do
+      aklog && sleep 3600 && kinit -R && chmod g+r $fname
+done

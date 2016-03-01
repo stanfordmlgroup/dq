@@ -18,6 +18,11 @@ if [ "x$OLDJOB" = "x" ]; then
 fi
 
 
+KRB5CCNAME=$BDIR/$OLDJOB/ticket.krb5 klist -s || {
+    echo "Cannot restart (ticket expired?). Please submit new job instead."
+    exit 1
+}
+
 echo -n "Locking..."
 mkdir -p $QDIR $ADIR $CDIR $BDIR && touch $BDIR
 

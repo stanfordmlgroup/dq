@@ -1,9 +1,8 @@
 #!/bin/bash
 
 D=$(cd `dirname $0` && pwd)
+aklog
 cd $CPWD
-
-keeptoken
 
 NESTEDLOCK=/dev/null
 if [ "x$CUDA_VISIBLE_DEVICES" != "x" ]; then
@@ -27,3 +26,4 @@ touch $JOBDIR/lock
 
 $D/dq-churn
 
+screen -S dq-$JOBID -X quit

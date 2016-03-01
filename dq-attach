@@ -38,7 +38,7 @@ if [ $ACNT -eq 1 ]; then
     U=$(cat $JOBDIR/user.txt)
     H=$(cat $JOBDIR/host.txt)
     
-    KRB5CCNAME=$JOBDIR/ticket.krb5 $SSH -t $U@$H screen -x dq-$JOBID
+    KRB5CCNAME=$JOBDIR/ticket.krb5 $SSH -t $U@$H screen -x dq-$JOBID -p 0
     exit $?
 fi
 
