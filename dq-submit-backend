@@ -21,9 +21,9 @@ export PATH=`cat cpath.txt`:$PATH
 export CPWD=`cat cpwd.txt`
 source env.txt
 
-pagsh -c "$D/screen -L -S dq-$JOBID -d -m $D/dq-submit-inner $JOBID"
-$D/screen -S dq-$JOBID -X screen 9
-$D/screen -S dq-$JOBID -p 9 -X stuff "dq-keeptoken
+pagsh -c "screen -L -S dq-$JOBID -d -m $D/dq-submit-inner $JOBID"
+screen -S dq-$JOBID -X screen 9
+screen -S dq-$JOBID -p 9 -X stuff "dq-keeptoken
 "
 
 #$D/screen -S dq-$JOBID -X colon "multiuser on ^M"
