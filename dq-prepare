@@ -46,7 +46,7 @@ mkdir -p $BDIR $QDIR $ADIR $CDIR && touch $BDIR
     echo $N > $BDIR/.jobid
 
     mkdir $BDIR/$JOBID && cp $JOBSCRIPT $BDIR/$JOBID/runme.sh && chmod +x $BDIR/$JOBID/runme.sh || exit 1
-    echo $PATH:$D:$D/scripts > $BDIR/$JOBID/cpath.txt
+    echo $PATH:$D:$D/scripts:/dq > $BDIR/$JOBID/cpath.txt
     echo $PWD > $BDIR/$JOBID/cpwd.txt
     echo $USER > $BDIR/$JOBID/user.txt
     echo $(abspath $JOBSCRIPT) > $BDIR/$JOBID/script.txt
