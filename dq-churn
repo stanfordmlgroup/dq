@@ -1,6 +1,7 @@
 #!/bin/bash
 
-CLUSTER_CNT=24
+CLUSTER_START=${DQ_CLUSTER_START:-1}
+CLUSTER_CNT=${DQ_CLUSTER_CNT:-24}
 GPU_CNT=4
 
 CLUSTER=$(hostname -s | sed 's/[0-9]//g')
@@ -34,7 +35,7 @@ touch $QDIR/.lock
 	ALL_FREE=$($D/dq-on-all gpu-free-list)
 	HOST=
 	GPU=
-	for i in `seq $CLUSTER_CNT | tac`; do
+	for i in `seq $CLUSTER_START $CLUSTER_CNT | tac`; do
 	    for gpu in `seq 0 $GPU_CNT`; do 
 		if [[ "$ALL_FREE" == *"$CLUSTER$i: GPU-$gpu"* ]]; then
 		    HOST=$CLUSTER$i
