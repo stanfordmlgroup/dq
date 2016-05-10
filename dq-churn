@@ -18,9 +18,9 @@ touch $QDIR/.lock
 (
     echo -n "Locking..."
     flock -xw 10 200 || {
-	echo " Timeout!"
-	echo "Please inspect system with 'dq-status' 'dq-free' etc."
-	exit 1
+        echo " Timeout!"
+        echo "Please inspect system with 'dq-status' 'dq-free' etc."
+        exit 1
     }
 
     echo " locked."
@@ -28,46 +28,47 @@ touch $QDIR/.lock
     JOBS=`ls -1 $QDIR | fgrep - | sort -n -k1 -t-`
 
     if [ "x$JOBS" = "x" ]; then
-	echo "No job requests to schedule"
-	exit 0
+        echo "No job requests to schedule"
+        exit 0
     fi
 
     for JOBID in $JOBS; do
-	export KRB5CCNAME=$QDIR/$JOBID/ticket.krb5
-	export USER=$(cat $QDIR/$JOBID/user.txt)
+        export KRB5CCNAME=$QDIR/$JOBID/ticket.krb5
+        export USER=$(cat $QDIR/$JOBID/user.txt)
 
-	ALL_FREE=$($D/dq-on-all gpu-free-list)
-	HOST=
-	GPU=
-	for i in `seq $CLUSTER_START $CLUSTER_CNT | tac`; do
-        skip=false;
-        for j in ${CLUSTER_EXCLUDE[@]}; do
-            if [[ "$i" -eq "$j" ]] ; then
-                skip=true;
-            fi;
-        done;
-        if $skip; then
-            continue;
-        fi
-	    for gpu in `seq 0 $GPU_CNT`; do
-		if [[ "$ALL_FREE" == *"$CLUSTER$i: GPU-$gpu"* ]]; then
-		    HOST=$CLUSTER$i
-		    GPU=$gpu
-		    break
-		fi
-	    done
-	    if [ "x$HOST" != "x" ]; then break; fi
-	done
+        HOST=
+        GPU=
+        while [ "x$HOST" == "x" ]; do
+            ALL_FREE=$($D/dq-on-all gpu-free-list)
+            for i in `seq $CLUSTER_START $CLUSTER_CNT | tac`; do
+                skip=false;
+                for j in ${CLUSTER_EXCLUDE[@]}; do
+                    if [[ "$i" -eq "$j" ]] ; then
+                        skip=true;
+                    fi;
+                done;
+                if $skip; then
+                    continue;
+                fi
+                for gpu in `seq 0 $GPU_CNT`; do
+                if [[ "$ALL_FREE" == *"$CLUSTER$i: GPU-$gpu"* ]]; then
+                    HOST=$CLUSTER$i
+                    GPU=$gpu
+                    break
+                fi
+                done
+                if [ "x$HOST" != "x" ]; then break; fi
+            done
+            if [ "x$HOST" == "x" ]; then
+                sleep_time=60;
+                echo "No machines free, sleeping for ${sleep_time}s...";
+                sleep $sleep_time;
+            fi
+        done
 
-
-	if [ "x$HOST" == "x" ]; then
-	    echo "Could not schedule $JOBID. (verify hosts with 'dq-free', 'dq-status' etc.')"
-	    exit 1
-	fi
-
-	U=$(cat $QDIR/$JOBID/user.txt)
-	echo "Executing '$JOBID' on $HOST/$GPU as $USER..."
-	$SSH $USER@$HOST CUDA_VISIBLE_DEVICES=$GPU $D/dq-submit-backend $JOBID
+        U=$(cat $QDIR/$JOBID/user.txt)
+        echo "Executing '$JOBID' on $HOST/$GPU as $USER..."
+        $SSH $USER@$HOST CUDA_VISIBLE_DEVICES=$GPU $D/dq-submit-backend $JOBID
     done
 
 ) 200>$QDIR/.lock
