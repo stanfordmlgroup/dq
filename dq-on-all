@@ -2,10 +2,24 @@
 
 CLUSTER_START=${DQ_CLUSTER_START:-1}
 CLUSTER_CNT=${DQ_CLUSTER_CNT:-24}
+# not specifying array due to http://stackoverflow.com/questions/5564418/exporting-an-array-in-bash-script
+EXCLUDE_START=${DQ_EXCLUDE_START:-25}
+EXCLUDE_END=${DQ_EXCLUDE_END:-26}
+CLUSTER_EXCLUDE=$(for i in `seq $EXCLUDE_START $EXCLUDE_END`; do echo $i; done)
 
 CLUSTER=$(hostname -s | sed 's/[0-9]//g')
 D=$(cd `dirname $0` && pwd)
-Hs=$(for i in `seq $CLUSTER_START $CLUSTER_CNT`; do echo $CLUSTER$i; done)
+Hs=$(for i in `seq $CLUSTER_START $CLUSTER_CNT`; do
+        skip=false;
+        for j in ${CLUSTER_EXCLUDE[@]}; do
+            if [[ "$i" -eq "$j" ]]; then
+                skip=true;
+            fi;
+        done;
+        if ! $skip; then
+            echo $CLUSTER$i;
+        fi
+      done);
 SSH="ssh -q -x -o BatchMode=yes" #" -o ConnectTimeout=10 -o ServerAliveInterval=3"
 function cleanup {
     echo "Cleaning up.."
