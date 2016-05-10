@@ -30,7 +30,7 @@ function cleanup {
 }
 
 for h in $Hs; do
-    $SSH $USER@$h CPATH=$PATH:$D:$D/scripts:/dq CPWD=$PWD $D/scripts/helper-on-all "\"$@\"" &
+    $SSH $USER@$h CPATH=/dq:$PATH:$D:$D/scripts CPWD=$PWD $D/scripts/helper-on-all "\"$@\"" &
 done
 
 trap cleanup SIGINT

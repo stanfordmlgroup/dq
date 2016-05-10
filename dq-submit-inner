@@ -13,6 +13,7 @@ export JOBDIR=$D/jobs/active/$JOBID
 export JOBID
 
 touch $JOBDIR/lock
+chmod g+w $JOBDIR/lock
 (
     flock -x 200
     flock -x 201
