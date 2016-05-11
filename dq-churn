@@ -1,13 +1,28 @@
 #!/bin/bash
 
-CLUSTER_START=${DQ_CLUSTER_START:-1}
-CLUSTER_CNT=${DQ_CLUSTER_CNT:-24}
-# not specifying array due to http://stackoverflow.com/questions/5564418/exporting-an-array-in-bash-script
-EXCLUDE_START=${DQ_EXCLUDE_START:-25}
-EXCLUDE_END=${DQ_EXCLUDE_END:-26}
-CLUSTER_EXCLUDE=$(for i in `seq $EXCLUDE_START $EXCLUDE_END`; do echo $i; done)
-GPU_CNT=4
+function expand {
+    input="$1" #"1,5-7,13-18,22"
+    sep="${2:- }"
+    result_str="$sep"
+    for num in $(tr ',' ' ' <<< "$input"); do
+        if [[ "$num" == *-* ]]; then
+            left=$(cut -f1 -d- <<< "$num")
+	    right=$(cut -f2 -d-  <<< "$num")
+	    if [ 0$left -lt 0$right ]; then
+		res=$(seq -s "$sep" $left $right)
+	    else
+		res=$(seq -s "$sep" $left -1 $right)
+            fi
+        else
+            res="$num"
+        fi
+        result_str="$result_str$res$sep"
+    done
+    echo ${result_str}
+}
 
+MAX_HOST=24
+GPU_CNT=4
 CLUSTER=$(hostname -s | sed 's/[0-9]//g')
 D=$(cd `dirname $0` && pwd)
 SSH="ssh -q -x -o BatchMode=yes" #" -o ConnectTimeout=10 -o ServerAliveInterval=3"
@@ -38,33 +53,31 @@ touch $QDIR/.lock
 
         HOST=
         GPU=
-        while [ "x$HOST" == "x" ]; do
-            ALL_FREE=$($D/dq-on-all gpu-free-list)
-            for i in `seq $CLUSTER_START $CLUSTER_CNT | tac`; do
-                skip=false;
-                for j in ${CLUSTER_EXCLUDE[@]}; do
-                    if [[ "$i" -eq "$j" ]] ; then
-                        skip=true;
-                    fi;
-                done;
-                if $skip; then
-                    continue;
-                fi
-                for gpu in `seq 0 $GPU_CNT`; do
+        ALL_FREE=$($D/dq-on-all gpu-free-list)
+	DQ_RANGE=$(grep DQ_RANGE $QDIR/$JOBID/env.txt | cut -f2 -d=)
+	DQ_EXCLUDE=$(grep DQ_EXCLUDE $QDIR/$JOBID/env.txt | cut -f2 -d=)
+	RANGE=`expand ${DQ_RANGE:-$MAX_HOST-1}`
+	EXCLUDE=`expand "${DQ_EXCLUDE}" -`
+
+        for i in $RANGE; do
+            if [[ "$EXCLUDE" == *-$i-* ]]; then
+		echo "Excluding host $i"
+                continue;
+            fi
+            for gpu in `seq 0 $GPU_CNT`; do
                 if [[ "$ALL_FREE" == *"$CLUSTER$i: GPU-$gpu"* ]]; then
                     HOST=$CLUSTER$i
                     GPU=$gpu
                     break
                 fi
-                done
-                if [ "x$HOST" != "x" ]; then break; fi
             done
-            if [ "x$HOST" == "x" ]; then
-                sleep_time=60;
-                echo "No machines free, sleeping for ${sleep_time}s...";
-                sleep $sleep_time;
-            fi
+            if [ "x$HOST" != "x" ]; then break; fi
         done
+
+        if [ "x$HOST" == "x" ]; then
+            echo "No machines free for job $JOBID";
+	    break
+        fi
 
         U=$(cat $QDIR/$JOBID/user.txt)
         echo "Executing '$JOBID' on $HOST/$GPU as $USER..."
