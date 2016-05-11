@@ -1,4 +1,4 @@
-#!shell -p
+#!/bin/bash
 
 h=$(hostname -s)
 gpus=$(nvidia-smi -L | cut -f1 -d: | cut -f2 -d' ')

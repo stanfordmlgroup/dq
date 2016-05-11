@@ -13,7 +13,7 @@ function disp {
     exit
 }
 
-$D/dq-on-all gpu-users | {
+$D/dq-on-all shell -pc gpu-users | {
     trap disp SIGINT
 
     while read line; do
