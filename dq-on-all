@@ -20,7 +20,7 @@ Hs=$(for i in `seq $CLUSTER_START $CLUSTER_CNT`; do
             echo $CLUSTER$i;
         fi
       done);
-SSH="ssh -q -x -o BatchMode=yes" #" -o ConnectTimeout=10 -o ServerAliveInterval=3"
+SSH="ssh -q -x -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=3"
 function cleanup {
     echo "Cleaning up.."
     kill -INT -- 0
