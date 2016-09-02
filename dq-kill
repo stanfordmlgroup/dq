@@ -41,7 +41,6 @@ fi
 # $ACNT -lt 1
 (
     echo -n "Locking..."
-    flock -xn 200 || echo -n " (locked; waiting...)"
     flock -xw 10 200 || {
 	echo " Timeout!"
 	echo "Please inspect system with 'dq-status' 'dq-free' etc."

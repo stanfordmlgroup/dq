@@ -27,7 +27,6 @@ echo -n "Locking..."
 mkdir -p $QDIR $ADIR $CDIR $BDIR && touch $BDIR
 
 (
-    flock -xn 200 || echo -n " (waiting...)"
     flock -xw 10 200 || {
 	echo " Timeout!"
 	echo "Please inspect system with 'dq-status' 'dq-free' etc."
