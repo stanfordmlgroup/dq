@@ -53,7 +53,7 @@ touch $QDIR/.lock
 
         HOST=
         GPU=
-        ALL_FREE=$($D/dq-on-all gpu-free-list)
+        ALL_FREE=$($D/dq-on-all shell -pc gpu-free-list)
 	DQ_RANGE=$(grep DQ_RANGE $QDIR/$JOBID/env.txt | cut -f2 -d=)
 	DQ_EXCLUDE=$(grep DQ_EXCLUDE $QDIR/$JOBID/env.txt | cut -f2 -d=)
 	RANGE=`expand ${DQ_RANGE:-$MAX_HOST-1}`
